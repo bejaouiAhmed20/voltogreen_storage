@@ -20,8 +20,9 @@ import {
   FormControl,
   InputLabel,
   Chip,
+  Avatar,
 } from "@mui/material";
-import { Add, Edit, Delete, Search } from "@mui/icons-material";
+import { Add, Edit, Delete, Search, Build } from "@mui/icons-material";
 import { getLoans, createLoan, updateLoan, deleteLoan } from "../services/loanService";
 import { getUsers } from "../services/userService";
 import { getTools } from "../services/toolService";
@@ -157,6 +158,18 @@ export default function Loans() {
     setFormData({ ...formData, tools: newTools });
   };
 
+  const getSelectedTool = (toolId) => {
+    return tools.find(tool => tool.id === toolId);
+  };
+
+  const getQuantityError = (toolId, requestedQuantity) => {
+    const tool = getSelectedTool(toolId);
+    if (tool && requestedQuantity > tool.quantity) {
+      return `Only ${tool.quantity} available`;
+    }
+    return null;
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case "borrowed": return "primary";
@@ -259,35 +272,56 @@ export default function Loans() {
                 </Button>
               )}
             </div>
-            {formData.tools.map((tool, index) => (
-              <div key={index} className="flex gap-2 mb-2 items-center">
-                <FormControl fullWidth>
-                  <InputLabel>Tool</InputLabel>
-                  <Select
-                    value={tool.tool_id}
-                    onChange={(e) => updateTool(index, 'tool_id', e.target.value)}
-                  >
-                    {tools.map((t) => (
-                      <MenuItem key={t.id} value={t.id}>
-                        {t.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <TextField
-                  label="Quantity"
-                  type="number"
-                  value={tool.quantity}
-                  onChange={(e) => updateTool(index, 'quantity', e.target.value)}
-                  sx={{ width: 120 }}
-                />
-                {!editLoan && formData.tools.length > 1 && (
-                  <IconButton onClick={() => removeTool(index)} color="error">
-                    <Delete />
-                  </IconButton>
-                )}
-              </div>
-            ))}
+            {formData.tools.map((tool, index) => {
+              const selectedTool = getSelectedTool(tool.tool_id);
+              const quantityError = getQuantityError(tool.tool_id, tool.quantity);
+              
+              return (
+                <div key={index} className="border rounded-lg p-3 mb-3">
+                  <div className="flex gap-2 items-start">
+                    {selectedTool && (
+                      <Avatar
+                        src={selectedTool.picture}
+                        sx={{ width: 50, height: 50 }}
+                      >
+                        <Build />
+                      </Avatar>
+                    )}
+                    <div className="flex-1">
+                      <FormControl fullWidth margin="dense">
+                        <InputLabel>Tool</InputLabel>
+                        <Select
+                          value={tool.tool_id}
+                          onChange={(e) => updateTool(index, 'tool_id', e.target.value)}
+                        >
+                          {tools.map((t) => (
+                            <MenuItem key={t.id} value={t.id}>
+                              {t.name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      <div className="flex gap-2 items-center mt-2">
+                        <TextField
+                          label="Quantity"
+                          type="number"
+                          value={tool.quantity}
+                          onChange={(e) => updateTool(index, 'quantity', e.target.value)}
+                          error={!!quantityError}
+                          helperText={quantityError || (selectedTool ? `Available: ${selectedTool.quantity}` : '')}
+                          sx={{ width: 120 }}
+                        />
+                        {!editLoan && formData.tools.length > 1 && (
+                          <IconButton onClick={() => removeTool(index)} color="error">
+                            <Delete />
+                          </IconButton>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
           
           <TextField
