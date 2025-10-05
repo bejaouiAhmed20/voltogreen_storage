@@ -25,7 +25,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import { Add, Edit, Delete, Search, Build, Image } from "@mui/icons-material";
-import { getTools, createTool, updateTool, deleteTool } from "../services/toolService";
+import { getTools, createTool, updateTool, deleteTool, uploadToolImage } from "../services/toolService";
 
 export default function Tools() {
   const [tools, setTools] = useState([]);
@@ -44,9 +44,11 @@ export default function Tools() {
     availability: true,
     purchase_quantity: 0,
   });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const toolTypes = ["Électrique", "Manuel", "Jardinage", "Construction", "Automobile", "Other"];
-  const conditions = ["Neuf", "Excellent", "Bon", "Moyen", "Usé", "Réparation nécessaire"];
+  const conditions = ["new", "excellent", "good", "fair", "poor", "needs_repair"];
 
   useEffect(() => {
     loadTools();
@@ -81,15 +83,25 @@ export default function Tools() {
 
   const handleSubmit = async () => {
     try {
+      setUploading(true);
+      let toolData = { ...formData };
+      
+      if (selectedFile) {
+        const imageUrl = await uploadToolImage(selectedFile);
+        toolData.picture = imageUrl;
+      }
+      
       if (editTool) {
-        await updateTool(editTool.id, formData);
+        await updateTool(editTool.id, toolData);
       } else {
-        await createTool(formData);
+        await createTool(toolData);
       }
       loadTools();
       handleClose();
     } catch (error) {
       console.error("Erreur lors de la sauvegarde de l'outil:", error);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -123,6 +135,7 @@ export default function Tools() {
   const handleClose = () => {
     setOpen(false);
     setEditTool(null);
+    setSelectedFile(null);
     setFormData({
       picture: "",
       name: "",
@@ -138,12 +151,12 @@ export default function Tools() {
 
   const getConditionColor = (condition) => {
     const colors = {
-      "Neuf": "#10b981",
-      "Excellent": "#22c55e",
-      "Bon": "#84cc16",
-      "Moyen": "#eab308",
-      "Usé": "#f97316",
-      "Réparation nécessaire": "#ef4444"
+      "new": "#10b981",
+      "excellent": "#22c55e",
+      "good": "#84cc16",
+      "fair": "#eab308",
+      "poor": "#f97316",
+      "needs_repair": "#ef4444"
     };
     return colors[condition] || "#6b7280";
   };
@@ -373,18 +386,28 @@ export default function Tools() {
         <DialogContent className="space-y-4 pt-4">
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="URL de l'image"
-                value={formData.picture}
-                onChange={(e) => setFormData({ ...formData, picture: e.target.value })}
-                margin="normal"
-                sx={{
-                  "& .MuiOutlinedInput-root": {
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1, color: "#374151" }}>
+                  Image de l'outil
+                </Typography>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setSelectedFile(e.target.files[0])}
+                  style={{
+                    padding: "8px",
+                    border: "1px solid #d1d5db",
                     borderRadius: "8px",
-                  }
-                }}
-              />
+                    width: "100%",
+                    backgroundColor: "#f9fafb"
+                  }}
+                />
+                {selectedFile && (
+                  <Typography variant="caption" sx={{ color: "#059669", mt: 1, display: "block" }}>
+                    Fichier sélectionné: {selectedFile.name}
+                  </Typography>
+                )}
+              </Box>
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -536,6 +559,7 @@ export default function Tools() {
           <Button 
             onClick={handleSubmit} 
             variant="contained"
+            disabled={uploading}
             sx={{
               background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
               "&:hover": {
@@ -544,7 +568,7 @@ export default function Tools() {
               borderRadius: "8px",
             }}
           >
-            {editTool ? "Mettre à jour" : "Créer"}
+            {uploading ? "Téléchargement..." : editTool ? "Mettre à jour" : "Créer"}
           </Button>
         </DialogActions>
       </Dialog>
