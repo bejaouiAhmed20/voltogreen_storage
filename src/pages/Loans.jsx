@@ -210,6 +210,7 @@ export default function Loans() {
         <Table>
           <TableHead>
             <TableRow>
+              <TableCell>Tool Image</TableCell>
               <TableCell>User</TableCell>
               <TableCell>Tool</TableCell>
               <TableCell>Start Date</TableCell>
@@ -223,6 +224,14 @@ export default function Loans() {
           <TableBody>
             {filteredLoans.map((loan) => (
               <TableRow key={loan.id}>
+                <TableCell>
+                  <Avatar
+                    src={loan.tools?.picture}
+                    sx={{ width: 40, height: 40 }}
+                  >
+                    <Build />
+                  </Avatar>
+                </TableCell>
                 <TableCell>{loan.users?.name || "N/A"}</TableCell>
                 <TableCell>{loan.tools?.name || "N/A"}</TableCell>
                 <TableCell>{loan.start_date ? new Date(loan.start_date).toLocaleDateString() : "N/A"}</TableCell>

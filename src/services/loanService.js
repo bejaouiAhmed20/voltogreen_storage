@@ -6,7 +6,7 @@ export async function getLoans() {
     .select(`
       *,
       users(name),
-      tools(name)
+      tools(name, picture)
     `)
     .order("created_at", { ascending: false });
   
