@@ -35,11 +35,10 @@ export default function Loans() {
   const [editLoan, setEditLoan] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [formData, setFormData] = useState({
-    tool_id: "",
     user_id: "",
     start_date: "",
-    quantity: 1,
     location: "",
+    tools: [{ tool_id: "", quantity: 1 }],
   });
 
   useEffect(() => {
@@ -74,14 +73,29 @@ export default function Loans() {
 
   const handleSubmit = async () => {
     try {
-      const loanData = {
-        ...formData
-      };
-      
       if (editLoan) {
+        const loanData = {
+          user_id: formData.user_id,
+          start_date: formData.start_date,
+          location: formData.location,
+          tool_id: formData.tools[0].tool_id,
+          quantity: formData.tools[0].quantity
+        };
         await updateLoan(editLoan.id, loanData);
       } else {
-        await createLoan(loanData);
+        // Create multiple loans for each tool
+        for (const tool of formData.tools) {
+          if (tool.tool_id && tool.quantity > 0) {
+            const loanData = {
+              user_id: formData.user_id,
+              start_date: formData.start_date,
+              location: formData.location,
+              tool_id: tool.tool_id,
+              quantity: tool.quantity
+            };
+            await createLoan(loanData);
+          }
+        }
       }
       loadData();
       handleClose();
@@ -104,11 +118,10 @@ export default function Loans() {
   const handleEdit = (loan) => {
     setEditLoan(loan);
     setFormData({
-      tool_id: loan.tool_id || "",
       user_id: loan.user_id || "",
       start_date: loan.start_date ? loan.start_date.split('T')[0] : "",
-      quantity: loan.quantity || 1,
       location: loan.location || "",
+      tools: [{ tool_id: loan.tool_id || "", quantity: loan.quantity || 1 }],
     });
     setOpen(true);
   };
@@ -117,12 +130,31 @@ export default function Loans() {
     setOpen(false);
     setEditLoan(null);
     setFormData({
-      tool_id: "",
       user_id: "",
       start_date: "",
-      quantity: 1,
       location: "",
+      tools: [{ tool_id: "", quantity: 1 }],
     });
+  };
+
+  const addTool = () => {
+    setFormData({
+      ...formData,
+      tools: [...formData.tools, { tool_id: "", quantity: 1 }]
+    });
+  };
+
+  const removeTool = (index) => {
+    if (formData.tools.length > 1) {
+      const newTools = formData.tools.filter((_, i) => i !== index);
+      setFormData({ ...formData, tools: newTools });
+    }
+  };
+
+  const updateTool = (index, field, value) => {
+    const newTools = [...formData.tools];
+    newTools[index][field] = field === 'quantity' ? parseInt(value) : value;
+    setFormData({ ...formData, tools: newTools });
   };
 
   const getStatusColor = (status) => {
@@ -217,27 +249,47 @@ export default function Loans() {
               ))}
             </Select>
           </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Tool</InputLabel>
-            <Select
-              value={formData.tool_id}
-              onChange={(e) => setFormData({ ...formData, tool_id: e.target.value })}
-            >
-              {tools.map((tool) => (
-                <MenuItem key={tool.id} value={tool.id}>
-                  {tool.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <TextField
-            fullWidth
-            label="Quantity"
-            type="number"
-            value={formData.quantity}
-            onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
-            margin="normal"
-          />
+          
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <Typography variant="subtitle1">Tools</Typography>
+              {!editLoan && (
+                <Button size="small" onClick={addTool} variant="outlined">
+                  Add Tool
+                </Button>
+              )}
+            </div>
+            {formData.tools.map((tool, index) => (
+              <div key={index} className="flex gap-2 mb-2 items-center">
+                <FormControl fullWidth>
+                  <InputLabel>Tool</InputLabel>
+                  <Select
+                    value={tool.tool_id}
+                    onChange={(e) => updateTool(index, 'tool_id', e.target.value)}
+                  >
+                    {tools.map((t) => (
+                      <MenuItem key={t.id} value={t.id}>
+                        {t.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <TextField
+                  label="Quantity"
+                  type="number"
+                  value={tool.quantity}
+                  onChange={(e) => updateTool(index, 'quantity', e.target.value)}
+                  sx={{ width: 120 }}
+                />
+                {!editLoan && formData.tools.length > 1 && (
+                  <IconButton onClick={() => removeTool(index)} color="error">
+                    <Delete />
+                  </IconButton>
+                )}
+              </div>
+            ))}
+          </div>
+          
           <TextField
             fullWidth
             label="Start Date"
