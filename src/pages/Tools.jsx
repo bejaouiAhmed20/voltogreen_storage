@@ -34,20 +34,18 @@ export default function Tools() {
   const [editTool, setEditTool] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [formData, setFormData] = useState({
-    picture: "",
     name: "",
     type: "",
     condition: "",
     quantity: 0,
     price: 0,
     purchase_date: "",
-    availability: true,
-    purchase_quantity: 0,
+    picture: "",
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
 
-  const toolTypes = ["Électrique", "Manuel", "Jardinage", "Construction", "Automobile", "Other"];
+  const toolTypes = ["Basic Hand Tools", "Electrical Tools", "Power Tools", "Installation & Mounting Tools", "Safety & Protective Equipment", "Specialized Solar Tools"];
   const conditions = ["new", "excellent", "good", "fair", "poor", "needs_repair"];
 
   useEffect(() => {
@@ -84,7 +82,10 @@ export default function Tools() {
   const handleSubmit = async () => {
     try {
       setUploading(true);
-      let toolData = { ...formData };
+      let toolData = { 
+        ...formData,
+        availability: true
+      };
       
       if (selectedFile) {
         const imageUrl = await uploadToolImage(selectedFile);
@@ -119,15 +120,13 @@ export default function Tools() {
   const handleEdit = (tool) => {
     setEditTool(tool);
     setFormData({
-      picture: tool.picture || "",
       name: tool.name || "",
       type: tool.type || "",
       condition: tool.condition || "",
       quantity: tool.quantity || 0,
       price: tool.price || 0,
       purchase_date: tool.purchase_date ? tool.purchase_date.split('T')[0] : "",
-      availability: tool.availability || false,
-      purchase_quantity: tool.purchase_quantity || 0,
+      picture: tool.picture || "",
     });
     setOpen(true);
   };
@@ -137,15 +136,13 @@ export default function Tools() {
     setEditTool(null);
     setSelectedFile(null);
     setFormData({
-      picture: "",
       name: "",
       type: "",
       condition: "",
       quantity: 0,
       price: 0,
       purchase_date: "",
-      availability: true,
-      purchase_quantity: 0,
+      picture: "",
     });
   };
 
@@ -384,165 +381,113 @@ export default function Tools() {
           {editTool ? "Modifier l'outil" : "Ajouter un outil"}
         </DialogTitle>
         <DialogContent className="space-y-4 pt-4">
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="subtitle2" sx={{ mb: 1, color: "#374151" }}>
-                  Image de l'outil
-                </Typography>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setSelectedFile(e.target.files[0])}
-                  style={{
-                    padding: "8px",
-                    border: "1px solid #d1d5db",
-                    borderRadius: "8px",
-                    width: "100%",
-                    backgroundColor: "#f9fafb"
-                  }}
-                />
-                {selectedFile && (
-                  <Typography variant="caption" sx={{ color: "#059669", mt: 1, display: "block" }}>
-                    Fichier sélectionné: {selectedFile.name}
-                  </Typography>
-                )}
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Nom de l'outil"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                margin="normal"
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "8px",
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                select
-                label="Type"
-                value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                margin="normal"
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "8px",
-                  }
-                }}
-              >
-                {toolTypes.map(type => (
-                  <MenuItem key={type} value={type}>{type}</MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                select
-                label="État"
-                value={formData.condition}
-                onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
-                margin="normal"
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "8px",
-                  }
-                }}
-              >
-                {conditions.map(condition => (
-                  <MenuItem key={condition} value={condition}>{condition}</MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Quantité"
-                type="number"
-                value={formData.quantity}
-                onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
-                margin="normal"
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "8px",
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Prix"
-                type="number"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
-                margin="normal"
-                InputProps={{
-                  endAdornment: <InputAdornment position="end">€</InputAdornment>,
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "8px",
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Date d'achat"
-                type="date"
-                value={formData.purchase_date}
-                onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
-                margin="normal"
-                InputLabelProps={{ shrink: true }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "8px",
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Quantité d'achat"
-                type="number"
-                value={formData.purchase_quantity}
-                onChange={(e) => setFormData({ ...formData, purchase_quantity: parseInt(e.target.value) })}
-                margin="normal"
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "8px",
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formData.availability}
-                    onChange={(e) => setFormData({ ...formData, availability: e.target.checked })}
-                    sx={{
-                      color: "#059669",
-                      "&.Mui-checked": {
-                        color: "#059669",
-                      },
-                    }}
-                  />
+          <div className="space-y-4">
+            <TextField
+              fullWidth
+              label="Nom de l'outil"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
                 }
-                label="Disponible"
+              }}
+            />
+            <TextField
+              fullWidth
+              select
+              label="Type"
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                }
+              }}
+            >
+              {toolTypes.map(type => (
+                <MenuItem key={type} value={type}>{type}</MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              fullWidth
+              select
+              label="État"
+              value={formData.condition}
+              onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                }
+              }}
+            >
+              {conditions.map(condition => (
+                <MenuItem key={condition} value={condition}>{condition}</MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              fullWidth
+              label="Quantité"
+              type="number"
+              value={formData.quantity}
+              onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                }
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Prix (TND)"
+              type="number"
+              value={formData.price}
+              onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
+              InputProps={{
+                endAdornment: <InputAdornment position="end">TND</InputAdornment>,
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                }
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Date d'achat"
+              type="date"
+              value={formData.purchase_date}
+              onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
+              InputLabelProps={{ shrink: true }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                }
+              }}
+            />
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1, color: "#374151" }}>
+                Image de l'outil
+              </Typography>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setSelectedFile(e.target.files[0])}
+                style={{
+                  padding: "8px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "8px",
+                  width: "100%",
+                  backgroundColor: "#f9fafb"
+                }}
               />
-            </Grid>
-          </Grid>
+              {selectedFile && (
+                <Typography variant="caption" sx={{ color: "#059669", mt: 1, display: "block" }}>
+                  Fichier sélectionné: {selectedFile.name}
+                </Typography>
+              )}
+            </Box>
+          </div>
         </DialogContent>
         <DialogActions sx={{ padding: "20px 24px", gap: 1 }}>
           <Button 
