@@ -216,32 +216,47 @@ export default function Loans() {
             variant="contained"
             startIcon={<Add />}
             onClick={() => setOpen(true)}
-            className="bg-green-600 hover:bg-green-700"
+            sx={{
+              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+              "&:hover": {
+                background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+              },
+              borderRadius: "8px",
+            }}
           >
             Ajouter Prêt
           </Button>
         </div>
       </div>
 
-      <TableContainer component={Paper}>
+      <div className="flex justify-center">
+        <TableContainer
+          component={Paper}
+          sx={{
+            borderRadius: "12px",
+            border: "1px solid #e5e7eb",
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+            width: "100%",
+          }}
+        >
         <Table>
           <TableHead>
-            <TableRow>
-              <TableCell>Image Outil</TableCell>
-              <TableCell>Utilisateur</TableCell>
-              <TableCell>Outil</TableCell>
-              <TableCell>Date Début</TableCell>
-              <TableCell>Date Retour</TableCell>
-              <TableCell>Statut</TableCell>
-              <TableCell>Quantité</TableCell>
-              <TableCell>Projet</TableCell>
-              <TableCell>Actions</TableCell>
+            <TableRow sx={{ backgroundColor: "#f9fafb" }}>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Image Outil</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Utilisateur</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Outil</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Date Début</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Date Retour</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Statut</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Quantité</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Projet</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px", textAlign: "center" }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredLoans.map((loan) => (
-              <TableRow key={loan.id}>
-                <TableCell>
+              <TableRow key={loan.id} sx={{ "&:hover": { backgroundColor: "#f9fafb" } }}>
+                <TableCell sx={{ padding: "12px 16px" }}>
                   <Avatar
                     src={loan.tools?.picture}
                     sx={{ width: 40, height: 40 }}
@@ -249,28 +264,61 @@ export default function Loans() {
                     <Build />
                   </Avatar>
                 </TableCell>
-                <TableCell>{loan.users?.name || "N/A"}</TableCell>
-                <TableCell>{loan.tools?.name || "N/A"}</TableCell>
-                <TableCell>{formatDate(loan.start_date)}</TableCell>
-                <TableCell>{formatDate(loan.return_date)}</TableCell>
-                <TableCell>
-                  <Chip label={loan.status} color={getStatusColor(loan.status)} size="small" />
+                <TableCell sx={{ padding: "12px 16px", fontSize: "15px" }}>{loan.users?.name || "N/A"}</TableCell>
+                <TableCell sx={{ padding: "12px 16px", fontSize: "15px" }}>{loan.tools?.name || "N/A"}</TableCell>
+                <TableCell sx={{ padding: "12px 16px", fontSize: "15px" }}>{formatDate(loan.start_date)}</TableCell>
+                <TableCell sx={{ padding: "12px 16px", fontSize: "15px" }}>{formatDate(loan.return_date)}</TableCell>
+                <TableCell sx={{ padding: "12px 16px" }}>
+                  <Chip label={loan.status} color={getStatusColor(loan.status)} size="small" sx={{ fontSize: "14px" }} />
                 </TableCell>
-                <TableCell>{loan.quantity}</TableCell>
-                <TableCell>{loan.projects?.name || "N/A"}</TableCell>
-                <TableCell>
-                  <IconButton onClick={() => handleEdit(loan)} color="primary">
-                    <Edit />
-                  </IconButton>
-                  <IconButton onClick={() => handleDelete(loan.id)} color="error">
-                    <Delete />
-                  </IconButton>
+                <TableCell sx={{ padding: "12px 16px", fontSize: "15px" }}>{loan.quantity}</TableCell>
+                <TableCell sx={{ padding: "12px 16px", fontSize: "15px" }}>{loan.projects?.name || "N/A"}</TableCell>
+                <TableCell sx={{ padding: "12px 16px" }}>
+                  <div className="flex justify-center space-x-2">
+                    <Button
+                      size="small"
+                      startIcon={<Edit />}
+                      onClick={() => handleEdit(loan)}
+                      sx={{
+                        color: "#6b7280",
+                        fontSize: "13px",
+                        textTransform: "none",
+                        minWidth: "auto",
+                        padding: "6px 12px",
+                        "&:hover": {
+                          backgroundColor: "#eff6ff",
+                          color: "#3b82f6",
+                        },
+                      }}
+                    >
+                      Modifier
+                    </Button>
+                    <Button
+                      size="small"
+                      startIcon={<Delete />}
+                      onClick={() => handleDelete(loan.id)}
+                      sx={{
+                        color: "#6b7280",
+                        fontSize: "13px",
+                        textTransform: "none",
+                        minWidth: "auto",
+                        padding: "6px 12px",
+                        "&:hover": {
+                          backgroundColor: "#fef2f2",
+                          color: "#ef4444",
+                        },
+                      }}
+                    >
+                      Supprimer
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-      </TableContainer>
+        </TableContainer>
+      </div>
 
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
         <DialogTitle>{editLoan ? "Modifier Prêt" : "Ajouter Prêt"}</DialogTitle>

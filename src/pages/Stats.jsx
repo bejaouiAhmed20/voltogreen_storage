@@ -11,6 +11,9 @@ import {
   Button,
   useTheme,
   useMediaQuery,
+  Chip,
+  Divider,
+  LinearProgress,
 } from "@mui/material";
 import {
   People,
@@ -21,6 +24,9 @@ import {
   Warning,
   Refresh,
   Error as ErrorIcon,
+  Analytics,
+  Dashboard,
+  Assessment,
 } from "@mui/icons-material";
 import { getStats } from "../services/statsService";
 
@@ -104,12 +110,28 @@ const StatCard = React.memo(({
   return (
     <Card sx={{ 
       height: "100%", 
-      borderRadius: 3, 
-      boxShadow: 2,
-      transition: 'all 0.3s ease-in-out',
+      borderRadius: 4, 
+      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+      border: '1px solid rgba(0,0,0,0.05)',
+      background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      position: 'relative',
+      overflow: 'hidden',
       '&:hover': {
-        transform: 'translateY(-4px)',
-        boxShadow: 4,
+        transform: 'translateY(-8px)',
+        boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+        '& .stat-icon': {
+          transform: 'scale(1.1) rotate(5deg)',
+        }
+      },
+      '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '4px',
+        background: `linear-gradient(90deg, ${color}, ${color}80)`,
       }
     }}>
       <CardContent>
@@ -158,20 +180,24 @@ const StatCard = React.memo(({
             )}
           </Box>
           <Box
+            className="stat-icon"
             sx={{
-              backgroundColor: `${color}20`,
-              borderRadius: 2,
+              background: `linear-gradient(135deg, ${color}15, ${color}25)`,
+              borderRadius: 3,
               p: isMobile ? 1.5 : 2,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              ml: 2
+              ml: 2,
+              border: `2px solid ${color}20`,
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
             {React.cloneElement(icon, { 
               sx: { 
-                fontSize: isMobile ? 24 : 32, 
-                color 
+                fontSize: isMobile ? 28 : 36, 
+                color,
+                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
               } 
             })}
           </Box>
@@ -238,27 +264,76 @@ export default function Stats() {
   return (
     <Box>
       {/* Header */}
-      <Box className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: "bold", color: "text.primary", mb: 1 }}>
-            Tableau de Bord
-          </Typography>
-          {lastUpdated && (
-            <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              Dernière mise à jour: {lastUpdated.toLocaleTimeString()}
+      <Paper sx={{ 
+        p: 4, 
+        mb: 4, 
+        borderRadius: 4,
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        position: 'relative',
+        overflow: 'hidden',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          width: '200px',
+          height: '200px',
+          background: 'rgba(255,255,255,0.1)',
+          borderRadius: '50%',
+          transform: 'translate(50%, -50%)'
+        }
+      }}>
+        <Box className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4" sx={{ position: 'relative', zIndex: 1 }}>
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+              <Dashboard sx={{ fontSize: 40 }} />
+              <Typography variant="h3" sx={{ fontWeight: "bold", color: "white" }}>
+                Tableau de Bord
+              </Typography>
+            </Box>
+            <Typography variant="h6" sx={{ color: "rgba(255,255,255,0.9)", mb: 1 }}>
+              Vue d'ensemble des statistiques système
             </Typography>
-          )}
+            {lastUpdated && (
+              <Chip 
+                label={`Mis à jour: ${lastUpdated.toLocaleTimeString()}`}
+                size="small"
+                sx={{ 
+                  backgroundColor: 'rgba(255,255,255,0.2)', 
+                  color: 'white',
+                  '& .MuiChip-label': { fontWeight: 500 }
+                }}
+              />
+            )}
+          </Box>
+          <Button
+            startIcon={<Refresh />}
+            onClick={handleRefresh}
+            variant="contained"
+            disabled={loading}
+            size={isMobile ? "small" : "medium"}
+            sx={{
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              color: 'white',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255,255,255,0.3)',
+              '&:hover': {
+                backgroundColor: 'rgba(255,255,255,0.3)',
+              }
+            }}
+          >
+            {loading ? (
+              <>
+                <CircularProgress size={16} sx={{ color: 'white', mr: 1 }} />
+                Actualisation...
+              </>
+            ) : (
+              "Actualiser"
+            )}
+          </Button>
         </Box>
-        <Button
-          startIcon={<Refresh />}
-          onClick={handleRefresh}
-          variant="outlined"
-          disabled={loading}
-          size={isMobile ? "small" : "medium"}
-        >
-          {loading ? "Actualisation..." : "Actualiser"}
-        </Button>
-      </Box>
+      </Paper>
 
       {/* Loading State */}
       {loading && !stats && <StatsSkeleton />}
@@ -311,29 +386,20 @@ export default function Stats() {
           {/* Secondary Stats */}
           <Grid item xs={12} sm={6} md={3}>
             <StatCard
-              title="Prêts Actifs"
-              value={stats.activeLoans?.toLocaleString() || "0"}
-              icon={<TrendingUp />}
-              color="#059669"
-              subtitle="En cours"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Stock Faible"
-              value={stats.lowStockTools?.toLocaleString() || "0"}
+              title="Outils Endommagés"
+              value={stats.damagedTools?.toLocaleString() || "0"}
               icon={<Warning />}
               color="#ef4444"
-              subtitle="< 5 unités"
+              subtitle="Nécessitent réparation"
             />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <StatCard
-              title="Valeur Totale"
-              value={`${(stats.totalValue || 0).toLocaleString()} TND`}
-              icon={<Build />}
+              title="Achats Mensuels"
+              value={`${(stats.monthlyPurchases || 0).toLocaleString()} TND`}
+              icon={<TrendingUp />}
               color="#06b6d4"
-              subtitle="Inventaire"
+              subtitle="Ce mois"
             />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
@@ -345,37 +411,158 @@ export default function Stats() {
               subtitle="Total dépensé"
             />
           </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <StatCard
+              title="Projets Actifs"
+              value={stats.activeProjects?.toLocaleString() || "0"}
+              icon={<Analytics />}
+              color="#8b5cf6"
+              subtitle="En cours"
+            />
+          </Grid>
 
-          {/* Charts Section */}
+          {/* Analytics Section */}
           <Grid item xs={12}>
             <Paper sx={{ 
-              p: 3, 
-              borderRadius: 3, 
+              p: 4, 
+              borderRadius: 4, 
               mt: 2,
-              background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)`
+              background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
+              border: '1px solid rgba(0,0,0,0.05)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.08)'
             }}>
-              <Typography variant="h6" sx={{ fontWeight: "bold", color: "text.primary", mb: 3 }}>
-                Aperçu Général
-              </Typography>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <Card sx={{ textAlign: "center", p: 3, borderRadius: 2 }}>
-                    <Typography variant="h4" sx={{ fontWeight: "bold", color: "success.main", mb: 1 }}>
-                      {(stats.utilizationRate || 0).toFixed(1)}%
-                    </Typography>
-                    <Typography variant="body1" sx={{ color: "text.secondary" }}>
-                      Taux d'utilisation des outils
-                    </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
+                <Assessment sx={{ fontSize: 32, color: '#667eea' }} />
+                <Typography variant="h5" sx={{ fontWeight: "bold", color: "text.primary" }}>
+                  Indicateurs de Performance
+                </Typography>
+              </Box>
+              
+              <Grid container spacing={4}>
+                <Grid item xs={12} md={4}>
+                  <Card sx={{ 
+                    textAlign: "center", 
+                    p: 4, 
+                    borderRadius: 3,
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: '-50%',
+                      right: '-50%',
+                      width: '100px',
+                      height: '100px',
+                      background: 'rgba(255,255,255,0.1)',
+                      borderRadius: '50%'
+                    }
+                  }}>
+                    <Box sx={{ position: 'relative', zIndex: 1 }}>
+                      <Typography variant="h3" sx={{ fontWeight: "bold", mb: 2 }}>
+                        {(stats.utilizationRate || 0).toFixed(1)}%
+                      </Typography>
+                      <Typography variant="h6" sx={{ opacity: 0.9, mb: 2 }}>
+                        Taux d'utilisation
+                      </Typography>
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={stats.utilizationRate || 0} 
+                        sx={{ 
+                          height: 8, 
+                          borderRadius: 4,
+                          backgroundColor: 'rgba(255,255,255,0.3)',
+                          '& .MuiLinearProgress-bar': {
+                            backgroundColor: 'white'
+                          }
+                        }} 
+                      />
+                    </Box>
                   </Card>
                 </Grid>
-                <Grid item xs={12} md={6}>
-                  <Card sx={{ textAlign: "center", p: 3, borderRadius: 2 }}>
-                    <Typography variant="h4" sx={{ fontWeight: "bold", color: "info.main", mb: 1 }}>
-                      {(stats.maintenanceRate || 0).toFixed(1)}%
-                    </Typography>
-                    <Typography variant="body1" sx={{ color: "text.secondary" }}>
-                      Coût maintenance / Valeur totale
-                    </Typography>
+                <Grid item xs={12} md={4}>
+                  <Card sx={{ 
+                    textAlign: "center", 
+                    p: 4, 
+                    borderRadius: 3,
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                    color: 'white',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: '-50%',
+                      right: '-50%',
+                      width: '100px',
+                      height: '100px',
+                      background: 'rgba(255,255,255,0.1)',
+                      borderRadius: '50%'
+                    }
+                  }}>
+                    <Box sx={{ position: 'relative', zIndex: 1 }}>
+                      <Typography variant="h3" sx={{ fontWeight: "bold", mb: 2 }}>
+                        {(stats.maintenanceRate || 0).toFixed(1)}%
+                      </Typography>
+                      <Typography variant="h6" sx={{ opacity: 0.9, mb: 2 }}>
+                        Ratio maintenance
+                      </Typography>
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={stats.maintenanceRate || 0} 
+                        sx={{ 
+                          height: 8, 
+                          borderRadius: 4,
+                          backgroundColor: 'rgba(255,255,255,0.3)',
+                          '& .MuiLinearProgress-bar': {
+                            backgroundColor: 'white'
+                          }
+                        }} 
+                      />
+                    </Box>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <Card sx={{ 
+                    textAlign: "center", 
+                    p: 4, 
+                    borderRadius: 3,
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                    color: 'white',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: '-50%',
+                      right: '-50%',
+                      width: '100px',
+                      height: '100px',
+                      background: 'rgba(255,255,255,0.1)',
+                      borderRadius: '50%'
+                    }
+                  }}>
+                    <Box sx={{ position: 'relative', zIndex: 1 }}>
+                      <Typography variant="h3" sx={{ fontWeight: "bold", mb: 2 }}>
+                        {((stats.damagedTools / stats.totalTools) * 100 || 0).toFixed(1)}%
+                      </Typography>
+                      <Typography variant="h6" sx={{ opacity: 0.9, mb: 2 }}>
+                        Outils endommagés
+                      </Typography>
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={(stats.damagedTools / stats.totalTools) * 100 || 0} 
+                        sx={{ 
+                          height: 8, 
+                          borderRadius: 4,
+                          backgroundColor: 'rgba(255,255,255,0.3)',
+                          '& .MuiLinearProgress-bar': {
+                            backgroundColor: 'white'
+                          }
+                        }} 
+                      />
+                    </Box>
                   </Card>
                 </Grid>
               </Grid>

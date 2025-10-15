@@ -144,7 +144,7 @@ export default function Users() {
   }
 
   return (
-    <div>
+    <div style={{ width: '100%', maxWidth: 'none' }}>
       <div className="flex justify-between items-center mb-6">
         <div>
           <Typography variant="h4" className="font-bold text-green-700">
@@ -158,7 +158,13 @@ export default function Users() {
           variant="contained"
           startIcon={<Add />}
           onClick={() => setOpen(true)}
-          className="bg-green-600 hover:bg-green-700"
+          sx={{
+            background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+            "&:hover": {
+              background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+            },
+            borderRadius: "8px",
+          }}
         >
           Ajouter Utilisateur
         </Button>
@@ -186,16 +192,24 @@ export default function Users() {
         />
       </Box>
 
-      <TableContainer component={Paper}>
-        <Table>
+      <TableContainer
+        component={Paper}
+        sx={{
+          borderRadius: "12px",
+          border: "1px solid #e5e7eb",
+          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+          width: "100%",
+        }}
+      >
+        <Table sx={{ width: "100%", minWidth: "100%", tableLayout: "auto" }}>
           <TableHead>
             <TableRow>
-              <TableCell>Photo</TableCell>
-              <TableCell>Nom</TableCell>
-              <TableCell>CIN</TableCell>
-              <TableCell>Rôle</TableCell>
-              <TableCell>Admin</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell sx={{ padding: '12px 16px', fontSize: '16px', fontWeight: '600' }}>Photo</TableCell>
+              <TableCell sx={{ padding: '12px 16px', fontSize: '16px', fontWeight: '600' }}>Nom</TableCell>
+              <TableCell sx={{ padding: '12px 16px', fontSize: '16px', fontWeight: '600' }}>CIN</TableCell>
+              <TableCell sx={{ padding: '12px 16px', fontSize: '16px', fontWeight: '600' }}>Rôle</TableCell>
+              <TableCell sx={{ padding: '12px 16px', fontSize: '16px', fontWeight: '600' }}>Admin</TableCell>
+              <TableCell sx={{ padding: '12px 16px', fontSize: '16px', fontWeight: '600' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -214,7 +228,7 @@ export default function Users() {
             ) : (
               filteredUsers.map((user) => (
               <TableRow key={user.id}>
-                <TableCell>
+                <TableCell sx={{ padding: '12px 16px' }}>
                   <Avatar
                     src={user.picture}
                     sx={{ width: 40, height: 40 }}
@@ -222,17 +236,43 @@ export default function Users() {
                     <Person />
                   </Avatar>
                 </TableCell>
-                <TableCell>{user.name}</TableCell>
-                <TableCell>{user.cin}</TableCell>
-                <TableCell>{user.role}</TableCell>
-                <TableCell>{user.is_admin ? "Oui" : "Non"}</TableCell>
-                <TableCell>
-                  <IconButton onClick={() => handleEdit(user)} color="primary">
-                    <Edit />
-                  </IconButton>
-                  <IconButton onClick={() => handleDelete(user.id)} color="error">
-                    <Delete />
-                  </IconButton>
+                <TableCell sx={{ padding: '12px 16px', fontSize: '15px' }}>{user.name}</TableCell>
+                <TableCell sx={{ padding: '12px 16px', fontSize: '15px' }}>{user.cin}</TableCell>
+                <TableCell sx={{ padding: '12px 16px', fontSize: '15px' }}>{user.role}</TableCell>
+                <TableCell sx={{ padding: '12px 16px', fontSize: '15px' }}>{user.is_admin ? "Oui" : "Non"}</TableCell>
+                <TableCell sx={{ padding: '12px 16px' }}>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button
+                      startIcon={<Edit />}
+                      onClick={() => handleEdit(user)}
+                      size="small"
+                      sx={{
+                        color: "#3b82f6",
+                        "&:hover": {
+                          backgroundColor: "#eff6ff",
+                        },
+                        textTransform: 'none',
+                        fontSize: '13px'
+                      }}
+                    >
+                      Modifier
+                    </Button>
+                    <Button
+                      startIcon={<Delete />}
+                      onClick={() => handleDelete(user.id)}
+                      size="small"
+                      sx={{
+                        color: "#ef4444",
+                        "&:hover": {
+                          backgroundColor: "#fef2f2",
+                        },
+                        textTransform: 'none',
+                        fontSize: '13px'
+                      }}
+                    >
+                      Supprimer
+                    </Button>
+                  </Box>
                 </TableCell>
               </TableRow>
               ))

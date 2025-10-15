@@ -16,9 +16,15 @@ export async function getStats() {
     const maintenance = maintenanceResult.data || [];
     const projects = projectsResult.data || [];
 
-    const activeLoans = loans.filter(loan => loan.status === "borrowed").length;
-    const lowStockTools = tools.filter(tool => tool.quantity < 5).length;
-    const totalValue = tools.reduce((sum, tool) => sum + (tool.price * tool.quantity), 0);
+    const damagedTools = tools.filter(tool => tool.condition === "nécessite_réparation").length;
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const monthlyPurchases = tools
+      .filter(tool => {
+        const toolDate = new Date(tool.created_at);
+        return toolDate.getMonth() === currentMonth && toolDate.getFullYear() === currentYear;
+      })
+      .reduce((sum, tool) => sum + (tool.price || 0), 0);
     const maintenanceCost = maintenance.reduce((sum, item) => sum + (item.cost || 0), 0);
     
     const totalDamaged = loans.reduce((sum, loan) => sum + (loan.damaged_quantity || 0), 0);
@@ -31,15 +37,14 @@ export async function getStats() {
       totalLoans: loans.length,
       totalMaintenance: maintenance.length,
       totalProjects: projects.length,
-      activeLoans,
-      lowStockTools,
-      totalValue,
+      damagedTools,
+      monthlyPurchases,
       maintenanceCost,
       totalDamaged,
       totalLost,
       totalInstalled,
-      utilizationRate: loans.length > 0 ? (activeLoans / loans.length) * 100 : 0,
-      maintenanceRate: totalValue > 0 ? (maintenanceCost / totalValue) * 100 : 0
+      utilizationRate: tools.length > 0 ? (loans.length / tools.length) * 100 : 0,
+      maintenanceRate: monthlyPurchases > 0 ? (maintenanceCost / monthlyPurchases) * 100 : 0
     };
   } catch (error) {
     throw new Error(error.message);

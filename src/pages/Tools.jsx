@@ -241,25 +241,27 @@ export default function Tools() {
       </Box>
 
       {/* Tools Table */}
-      <TableContainer 
-        component={Paper}
-        sx={{
-          borderRadius: "12px",
-          border: "1px solid #e5e7eb",
-          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-        }}
-      >
+      <div className="flex justify-center">
+        <TableContainer 
+          component={Paper}
+          sx={{
+            borderRadius: "12px",
+            border: "1px solid #e5e7eb",
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+            width: "100%",
+          }}
+        >
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: "#f9fafb" }}>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Image</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Nom</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Type</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>État</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Quantité</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Prix</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Disponible</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151", textAlign: "center" }}>Actions</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Image</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Nom</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Type</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>État</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Quantité</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Prix</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Disponible</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px", textAlign: "center" }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -284,7 +286,7 @@ export default function Tools() {
                     transition: "background-color 0.2s ease"
                   }}
                 >
-                  <TableCell>
+                  <TableCell sx={{ padding: "12px 16px" }}>
                     <Avatar
                       src={tool.picture}
                       sx={{
@@ -296,17 +298,18 @@ export default function Tools() {
                       <Image sx={{ color: "#059669" }} />
                     </Avatar>
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ padding: "12px 16px" }}>
                     <Typography 
                       variant="body1" 
                       className="font-medium text-gray-900 cursor-pointer hover:text-green-600 transition-colors"
                       onClick={() => handleViewHistory(tool)}
                       title="Cliquer pour voir l'historique"
+                      sx={{ fontSize: "15px" }}
                     >
                       {tool.name}
                     </Typography>
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ padding: "12px 16px" }}>
                     <Chip
                       label={tool.type}
                       size="small"
@@ -314,10 +317,11 @@ export default function Tools() {
                         backgroundColor: "#eff6ff",
                         color: "#1e40af",
                         fontWeight: "500",
+                        fontSize: "14px",
                       }}
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ padding: "12px 16px" }}>
                     <Chip
                       label={tool.condition}
                       size="small"
@@ -326,10 +330,11 @@ export default function Tools() {
                         color: getConditionColor(tool.condition),
                         fontWeight: "500",
                         border: `1px solid ${getConditionColor(tool.condition)}30`,
+                        fontSize: "14px",
                       }}
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ padding: "12px 16px" }}>
                     <Box className="text-center">
                       <Typography 
                         variant="body1" 
@@ -337,6 +342,7 @@ export default function Tools() {
                           tool.quantity === 0 ? "text-red-600" : 
                           isLowStock(tool.quantity, LOW_STOCK_THRESHOLD) ? "text-amber-600" : "text-green-600"
                         }`}
+                        sx={{ fontSize: "15px" }}
                       >
                         {tool.quantity}
                       </Typography>
@@ -347,12 +353,12 @@ export default function Tools() {
                       )}
                     </Box>
                   </TableCell>
-                  <TableCell>
-                    <Typography variant="body1" className="font-semibold text-gray-900">
+                  <TableCell sx={{ padding: "12px 16px" }}>
+                    <Typography variant="body1" className="font-semibold text-gray-900" sx={{ fontSize: "15px" }}>
                       {formatCurrency(tool.price)}
                     </Typography>
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ padding: "12px 16px" }}>
                     <Chip
                       label={tool.availability ? "Oui" : "Non"}
                       size="small"
@@ -360,35 +366,48 @@ export default function Tools() {
                         backgroundColor: tool.availability ? "#ecfdf5" : "#fef2f2",
                         color: tool.availability ? "#065f46" : "#991b1b",
                         fontWeight: "500",
+                        fontSize: "14px",
                       }}
                     />
                   </TableCell>
-                  <TableCell>
-                    <div className="flex justify-center space-x-1">
-                      <IconButton 
+                  <TableCell sx={{ padding: "12px 16px" }}>
+                    <div className="flex justify-center space-x-2">
+                      <Button
+                        size="small"
+                        startIcon={<Edit />}
                         onClick={() => handleEdit(tool)}
                         sx={{
                           color: "#6b7280",
+                          fontSize: "13px",
+                          textTransform: "none",
+                          minWidth: "auto",
+                          padding: "6px 12px",
                           "&:hover": {
                             backgroundColor: "#eff6ff",
                             color: "#3b82f6",
                           },
                         }}
                       >
-                        <Edit fontSize="small" />
-                      </IconButton>
-                      <IconButton 
+                        Modifier
+                      </Button>
+                      <Button
+                        size="small"
+                        startIcon={<Delete />}
                         onClick={() => handleDelete(tool.id)}
                         sx={{
                           color: "#6b7280",
+                          fontSize: "13px",
+                          textTransform: "none",
+                          minWidth: "auto",
+                          padding: "6px 12px",
                           "&:hover": {
                             backgroundColor: "#fef2f2",
                             color: "#ef4444",
                           },
                         }}
                       >
-                        <Delete fontSize="small" />
-                      </IconButton>
+                        Supprimer
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -396,7 +415,8 @@ export default function Tools() {
             )}
           </TableBody>
         </Table>
-      </TableContainer>
+        </TableContainer>
+      </div>
 
       {/* Add/Edit Tool Dialog */}
       <Dialog 

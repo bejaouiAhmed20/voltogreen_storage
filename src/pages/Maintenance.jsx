@@ -207,24 +207,26 @@ export default function Maintenance() {
       </Box>
 
       {/* Maintenance Table */}
-      <TableContainer 
-        component={Paper}
-        sx={{
-          borderRadius: "12px",
-          border: "1px solid #e5e7eb",
-          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-        }}
-      >
+      <div className="flex justify-center">
+        <TableContainer 
+          component={Paper}
+          sx={{
+            borderRadius: "12px",
+            border: "1px solid #e5e7eb",
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+            width: "100%",
+          }}
+        >
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: "#f9fafb" }}>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Outil</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Description</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Date Début</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Date Réparation</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Coût</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Quantité</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151", textAlign: "center" }}>Actions</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Outil</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Description</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Date Début</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Date Réparation</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Coût</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Quantité</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px", textAlign: "center" }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -253,7 +255,7 @@ export default function Maintenance() {
                       borderLeft: isRecent ? "4px solid #10b981" : "none",
                     }}
                   >
-                    <TableCell>
+                    <TableCell sx={{ padding: "12px 16px" }}>
                       <div className="flex items-center space-x-3">
                         <Avatar
                           sx={{
@@ -267,7 +269,7 @@ export default function Maintenance() {
                           <Build />
                         </Avatar>
                         <div>
-                          <Typography variant="body1" className="font-medium text-gray-900">
+                          <Typography variant="body1" className="font-medium text-gray-900" sx={{ fontSize: "15px" }}>
                             {item.tools?.name || "N/A"}
                           </Typography>
                           <Typography variant="caption" className="text-gray-500">
@@ -276,20 +278,21 @@ export default function Maintenance() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ padding: "12px 16px" }}>
                       <Typography 
                         variant="body2" 
                         className="text-gray-700 line-clamp-2"
                         title={item.description}
+                        sx={{ fontSize: "15px" }}
                       >
                         {item.description}
                       </Typography>
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ padding: "12px 16px" }}>
                       <div className="flex items-center space-x-2">
                         <CalendarToday sx={{ fontSize: 16, color: "#6b7280" }} />
                         <div>
-                          <Typography variant="body2" className="text-gray-900">
+                          <Typography variant="body2" className="text-gray-900" sx={{ fontSize: "15px" }}>
                             {formatDate(item.date)}
                           </Typography>
                           {isRecent && (
@@ -308,11 +311,11 @@ export default function Maintenance() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ padding: "12px 16px" }}>
                       <div className="flex items-center space-x-2">
                         <CalendarToday sx={{ fontSize: 16, color: "#6b7280" }} />
                         <div>
-                          <Typography variant="body2" className="text-gray-900">
+                          <Typography variant="body2" className="text-gray-900" sx={{ fontSize: "15px" }}>
                             {item.fixed_date ? formatDate(item.fixed_date) : "En cours"}
                           </Typography>
                           {item.fixed_date ? (
@@ -343,11 +346,11 @@ export default function Maintenance() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ padding: "12px 16px" }}>
                       <Typography 
                         variant="body1" 
                         className="font-semibold"
-                        sx={{ color: getCostColor(item.cost) }}
+                        sx={{ color: getCostColor(item.cost), fontSize: "15px" }}
                       >
                         {formatCurrency(item.cost)}
                       </Typography>
@@ -357,13 +360,14 @@ export default function Maintenance() {
                         </Typography>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ padding: "12px 16px" }}>
                       <Box className="text-center">
                         <Typography 
                           variant="body1" 
                           className={`font-bold ${
                             item.quantity > 1 ? "text-amber-600" : "text-gray-900"
                           }`}
+                          sx={{ fontSize: "15px" }}
                         >
                           {item.quantity}
                         </Typography>
@@ -374,13 +378,19 @@ export default function Maintenance() {
                         )}
                       </Box>
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ padding: "12px 16px" }}>
                       <div className="flex justify-center space-x-1">
-                        <IconButton 
+                        <Button
+                          size="small"
+                          startIcon={<CheckCircle />}
                           onClick={() => handleMarkAsFixed(item.tool_id, item.id)}
                           disabled={!!item.fixed_date}
                           sx={{
                             color: item.fixed_date ? "#10b981" : "#6b7280",
+                            fontSize: "12px",
+                            textTransform: "none",
+                            minWidth: "auto",
+                            padding: "4px 8px",
                             "&:hover": {
                               backgroundColor: "#ecfdf5",
                               color: "#10b981",
@@ -388,32 +398,44 @@ export default function Maintenance() {
                           }}
                           title={item.fixed_date ? "Déjà réparé" : "Marquer comme réparé"}
                         >
-                          <CheckCircle fontSize="small" />
-                        </IconButton>
-                        <IconButton 
+                          Réparé
+                        </Button>
+                        <Button
+                          size="small"
+                          startIcon={<Edit />}
                           onClick={() => handleEdit(item)}
                           sx={{
                             color: "#6b7280",
+                            fontSize: "12px",
+                            textTransform: "none",
+                            minWidth: "auto",
+                            padding: "4px 8px",
                             "&:hover": {
                               backgroundColor: "#eff6ff",
                               color: "#3b82f6",
                             },
                           }}
                         >
-                          <Edit fontSize="small" />
-                        </IconButton>
-                        <IconButton 
+                          Modifier
+                        </Button>
+                        <Button
+                          size="small"
+                          startIcon={<Delete />}
                           onClick={() => handleDelete(item.id)}
                           sx={{
                             color: "#6b7280",
+                            fontSize: "12px",
+                            textTransform: "none",
+                            minWidth: "auto",
+                            padding: "4px 8px",
                             "&:hover": {
                               backgroundColor: "#fef2f2",
                               color: "#ef4444",
                             },
                           }}
                         >
-                          <Delete fontSize="small" />
-                        </IconButton>
+                          Supprimer
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -422,7 +444,8 @@ export default function Maintenance() {
             )}
           </TableBody>
         </Table>
-      </TableContainer>
+        </TableContainer>
+      </div>
 
       {/* Add/Edit Maintenance Dialog */}
       <Dialog 

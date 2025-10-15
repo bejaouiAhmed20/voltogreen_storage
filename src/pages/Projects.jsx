@@ -225,22 +225,24 @@ export default function Projects() {
         />
       </Box>
 
-      <TableContainer
-        component={Paper}
-        sx={{
-          borderRadius: "12px",
-          border: "1px solid #e5e7eb",
-          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-        }}
-      >
+      <div className="flex justify-center">
+        <TableContainer
+          component={Paper}
+          sx={{
+            borderRadius: "12px",
+            border: "1px solid #e5e7eb",
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+            width: "100%",
+          }}
+        >
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: "#f9fafb" }}>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Client</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Adresse</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Date de début</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Statut</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151", textAlign: "center" }}>Actions</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Client</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Adresse</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Date de début</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Statut</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px", textAlign: "center" }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -265,27 +267,27 @@ export default function Projects() {
                     transition: "background-color 0.2s ease"
                   }}
                 >
-                  <TableCell>
+                  <TableCell sx={{ padding: "12px 16px" }}>
                     <Typography 
                       variant="body1" 
                       className="font-medium text-blue-600 cursor-pointer hover:text-blue-800"
                       onClick={() => handleViewDetails(project)}
-                      sx={{ textDecoration: 'underline' }}
+                      sx={{ textDecoration: 'underline', fontSize: "15px" }}
                     >
                       {project.client_name || "N/A"}
                     </Typography>
                   </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" className="text-gray-700">
+                  <TableCell sx={{ padding: "12px 16px" }}>
+                    <Typography variant="body2" className="text-gray-700" sx={{ fontSize: "15px" }}>
                       {project.address || "N/A"}
                     </Typography>
                   </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" className="text-gray-700">
+                  <TableCell sx={{ padding: "12px 16px" }}>
+                    <Typography variant="body2" className="text-gray-700" sx={{ fontSize: "15px" }}>
                       {formatDate(project.start_date)}
                     </Typography>
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ padding: "12px 16px" }}>
                     <Chip
                       label={project.status}
                       size="small"
@@ -293,47 +295,66 @@ export default function Projects() {
                         backgroundColor: getStatusColor(project.status) + "20",
                         color: getStatusColor(project.status),
                         fontWeight: "500",
+                        fontSize: "14px",
                       }}
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ padding: "12px 16px" }}>
                     <div className="flex justify-center space-x-1">
-                      <IconButton
+                      <Button
+                        size="small"
+                        startIcon={<Visibility />}
                         onClick={() => handleViewDetails(project)}
                         sx={{
                           color: "#6b7280",
+                          fontSize: "12px",
+                          textTransform: "none",
+                          minWidth: "auto",
+                          padding: "4px 8px",
                           "&:hover": {
                             backgroundColor: "#f0f9ff",
                             color: "#0ea5e9",
                           },
                         }}
                       >
-                        <Visibility fontSize="small" />
-                      </IconButton>
-                      <IconButton
+                        Voir
+                      </Button>
+                      <Button
+                        size="small"
+                        startIcon={<Edit />}
                         onClick={() => handleEdit(project)}
                         sx={{
                           color: "#6b7280",
+                          fontSize: "12px",
+                          textTransform: "none",
+                          minWidth: "auto",
+                          padding: "4px 8px",
                           "&:hover": {
                             backgroundColor: "#eff6ff",
                             color: "#3b82f6",
                           },
                         }}
                       >
-                        <Edit fontSize="small" />
-                      </IconButton>
-                      <IconButton
+                        Modifier
+                      </Button>
+                      <Button
+                        size="small"
+                        startIcon={<Delete />}
                         onClick={() => handleDelete(project.id)}
                         sx={{
                           color: "#6b7280",
+                          fontSize: "12px",
+                          textTransform: "none",
+                          minWidth: "auto",
+                          padding: "4px 8px",
                           "&:hover": {
                             backgroundColor: "#fef2f2",
                             color: "#ef4444",
                           },
                         }}
                       >
-                        <Delete fontSize="small" />
-                      </IconButton>
+                        Supprimer
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -341,7 +362,8 @@ export default function Projects() {
             )}
           </TableBody>
         </Table>
-      </TableContainer>
+        </TableContainer>
+      </div>
 
       <Dialog
         open={open}
