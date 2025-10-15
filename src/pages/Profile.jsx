@@ -9,15 +9,10 @@ import {
   Divider,
   InputAdornment,
   IconButton,
-  Card,
-  Grid,
-  Chip,
-  Alert,
-  Snackbar,
 } from "@mui/material";
-import { Person, Save, Logout, Visibility, VisibilityOff, Security } from "@mui/icons-material";
+import { Person, Save, Logout, Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { updateUser } from "../services/userService";
+import { updateUser, uploadUserImage } from "../services/userService";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -25,14 +20,17 @@ export default function Profile() {
     name: "",
     cin: "",
     role: "",
+    picture: "",
   });
   const [formData, setFormData] = useState({
     name: "",
     cin: "",
     password: "",
+    picture: "",
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("user") || "{}");
@@ -41,11 +39,13 @@ export default function Profile() {
       name: userData.name || "",
       cin: userData.cin || "",
       password: userData.password || "",
+      picture: userData.picture || "",
     });
   }, []);
 
   const handleSave = async () => {
     try {
+      setUploading(true);
       const updateData = {
         name: formData.name,
         cin: formData.cin,
@@ -55,233 +55,141 @@ export default function Profile() {
         updateData.password = formData.password;
       }
       
+      if (selectedFile) {
+        const imageUrl = await uploadUserImage(selectedFile);
+        updateData.picture = imageUrl;
+      }
+      
       await updateUser(user.id, updateData);
       
       const updatedUser = { ...user, ...updateData };
       localStorage.setItem("user", JSON.stringify(updatedUser));
       setUser(updatedUser);
-      setFormData({ ...formData, password: updateData.password || formData.password });
-      showSnackbar("Profil mis à jour avec succès!", "success");
+      setFormData({ ...formData, password: updateData.password || formData.password, picture: updateData.picture || formData.picture });
+      setSelectedFile(null);
+      alert("Profil mis à jour avec succès!");
     } catch (error) {
-      showSnackbar("Erreur lors de la mise à jour du profil", "error");
+      alert("Erreur lors de la mise à jour du profil: " + error.message);
+    } finally {
+      setUploading(false);
     }
   };
 
-  // const handleLogout = () => {
-  //   localStorage.removeItem("user");
-  //   navigate("/");
-  // };
-
-  const showSnackbar = (message, severity) => {
-    setSnackbar({ open: true, message, severity });
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    navigate("/");
   };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
-  const getRoleColor = () => {
-    return user.role?.toLowerCase() === "admin" ? 
-      { bg: "#fef3c7", color: "#92400e" } : 
-      { bg: "#ecfdf5", color: "#065f46" };
-  };
-
-  const roleInfo = getRoleColor();
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header Section */}
-      <Card sx={{ 
-        borderRadius: "16px", 
-        background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-        overflow: "hidden"
-      }}>
-        <Box className="p-8">
-          <div className="flex items-center space-x-6">
-            <Avatar 
-              sx={{ 
-                width: 80, 
-                height: 80, 
-                bgcolor: "white",
-                color: "#059669",
-                fontSize: "1.5rem",
-                fontWeight: "bold",
-                border: "4px solid rgba(255,255,255,0.3)"
-              }}
-            >
-              {user.name?.charAt(0).toUpperCase() || <Person />}
-            </Avatar>
-            <div className="text-white">
-              <Typography variant="h4" className="font-bold mb-2">
-                {user.name || "Utilisateur"}
-              </Typography>
-              <div className="flex items-center space-x-3">
-                <Chip
-                  label={user.role || "Utilisateur"}
-                  sx={{
-                    backgroundColor: roleInfo.bg,
-                    color: roleInfo.color,
-                    fontWeight: "600",
-                  }}
-                />
-                <Typography variant="body2" className="text-white/80">
-                  Gestion du profil
-                </Typography>
-              </div>
-            </div>
-          </div>
-        </Box>
-      </Card>
+    <div className="max-w-2xl mx-auto">
+      <div className="flex items-center gap-4 mb-6">
+        <Avatar 
+          src={user.picture || formData.picture}
+          sx={{ width: 64, height: 64, bgcolor: "#16a34a" }}
+        >
+          <Person sx={{ fontSize: 32 }} />
+        </Avatar>
+        <div>
+          <Typography variant="h4" className="font-bold text-green-700">
+            Profil
+          </Typography>
+          <Typography variant="body1" className="text-gray-600">
+            Gérer les informations de votre compte
+          </Typography>
+        </div>
+      </div>
 
-      {/* Profile Form */}
-      <Card sx={{ 
-        borderRadius: "12px", 
-        border: "1px solid #e5e7eb",
-        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)"
-      }}>
-        <Box className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <Typography variant="h5" className="font-bold text-gray-900">
-              Informations Personnelles
+      <Paper className="p-6 space-y-6">
+        <div>
+          <Typography variant="h6" className="mb-4 text-green-700">
+            Informations Personnelles
+          </Typography>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1, color: "#374151" }}>
+              Photo de Profil
             </Typography>
-            <Chip 
-              icon={<Security />} 
-              label="Profil Sécurisé" 
-              color="primary" 
-              variant="outlined" 
-              size="small"
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setSelectedFile(e.target.files[0])}
+              style={{
+                padding: "8px",
+                border: "1px solid #d1d5db",
+                borderRadius: "8px",
+                width: "100%",
+                backgroundColor: "#f9fafb"
+              }}
+            />
+            {selectedFile && (
+              <Typography variant="caption" sx={{ color: "#16a34a", mt: 1, display: "block" }}>
+                Sélectionné: {selectedFile.name}
+              </Typography>
+            )}
+          </Box>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <TextField
+              fullWidth
+              label="Nom"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            />
+            <TextField
+              fullWidth
+              label="CIN"
+              value={formData.cin}
+              onChange={(e) => setFormData({ ...formData, cin: e.target.value })}
+            />
+            <TextField
+              fullWidth
+              label="Rôle"
+              value={user.role}
+              disabled
+              helperText="Le rôle ne peut pas être modifié"
+            />
+            <TextField
+              fullWidth
+              label="Mot de passe"
+              type={showPassword ? "text" : "password"}
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
           </div>
+        </div>
 
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Nom Complet"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "8px",
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="CIN"
-                value={formData.cin}
-                onChange={(e) => setFormData({ ...formData, cin: e.target.value })}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "8px",
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Rôle"
-                value={user.role}
-                disabled
-                helperText="Le rôle ne peut pas être modifié"
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "8px",
-                    backgroundColor: "#f9fafb",
-                  }
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Mot de Passe"
-                type={showPassword ? "text" : "password"}
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                helperText="Laissez vide pour ne pas modifier"
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                        sx={{ color: "#6b7280" }}
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "8px",
-                  }
-                }}
-              />
-            </Grid>
-          </Grid>
+        <Divider />
 
-          <Divider sx={{ my: 4 }} />
-
-          {/* Actions */}
-          <Box className="flex flex-col sm:flex-row justify-between gap-4">
-            <Button
-              variant="contained"
-              startIcon={<Save />}
-              onClick={handleSave}
-              sx={{
-                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                "&:hover": {
-                  background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
-                },
-                borderRadius: "8px",
-                px: 4,
-                py: 1,
-              }}
-            >
-              Sauvegarder les modifications
-            </Button>
-            {/* <Button
-              variant="outlined"
-              startIcon={<Logout />}
-              onClick={handleLogout}
-              sx={{
-                borderColor: "#ef4444",
-                color: "#ef4444",
-                borderRadius: "8px",
-                px: 4,
-                py: 1,
-                "&:hover": {
-                  borderColor: "#dc2626",
-                  backgroundColor: "#fef2f2",
-                },
-              }}
-            >
-              Déconnexion
-            </Button> */}
-          </Box>
-        </Box>
-      </Card>
-
-      {/* Snackbar for notifications */}
-      <Snackbar 
-        open={snackbar.open} 
-        autoHideDuration={4000} 
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert 
-          onClose={handleCloseSnackbar} 
-          severity={snackbar.severity}
-          sx={{ borderRadius: "8px" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+        <div className="flex justify-between">
+          <Button
+            variant="contained"
+            startIcon={<Save />}
+            onClick={handleSave}
+            disabled={uploading}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            {uploading ? "Sauvegarde..." : "Sauvegarder"}
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<Logout />}
+            onClick={handleLogout}
+            color="error"
+          >
+            Déconnexion
+          </Button>
+        </div>
+      </Paper>
     </div>
   );
 }

@@ -1,15 +1,19 @@
 import { supabase } from "./supabaseClient";
 
 export async function uploadToolImage(file) {
-  // For now, return a placeholder or use a different approach
-  // You can use a free image hosting service or disable RLS on the bucket
+  const fileName = `${Date.now()}-${file.name}`;
   
-  // Temporary solution: convert to base64 data URL
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.readAsDataURL(file);
-  });
+  const { data, error } = await supabase.storage
+    .from('tools_pictures')
+    .upload(fileName, file);
+  
+  if (error) throw new Error(error.message);
+  
+  const { data: { publicUrl } } = supabase.storage
+    .from('tools_pictures')
+    .getPublicUrl(fileName);
+  
+  return publicUrl;
 }
 
 export async function getTools() {

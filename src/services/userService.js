@@ -1,5 +1,25 @@
 import { supabase } from "./supabaseClient";
 
+export async function uploadUserImage(file) {
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${Date.now()}.${fileExt}`;
+  
+  const { data, error } = await supabase.storage
+    .from('users_pictures')
+    .upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: false
+    });
+  
+  if (error) throw new Error(error.message);
+  
+  const { data: urlData } = supabase.storage
+    .from('users_pictures')
+    .getPublicUrl(fileName);
+  
+  return urlData.publicUrl;
+}
+
 export async function getUsers() {
   const { data, error } = await supabase
     .from("users")

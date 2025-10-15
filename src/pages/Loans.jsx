@@ -21,26 +21,32 @@ import {
   InputLabel,
   Chip,
   Avatar,
+  CircularProgress,
 } from "@mui/material";
 import { Add, Edit, Delete, Search, Build } from "@mui/icons-material";
 import { getLoans, createLoan, updateLoan, deleteLoan } from "../services/loanService";
 import { getUsers } from "../services/userService";
 import { getTools } from "../services/toolService";
+import { getProjects } from "../services/projectService";
+import { getStatusColor, formatDate } from "../utils/helpers";
 
 export default function Loans() {
   const [loans, setLoans] = useState([]);
   const [filteredLoans, setFilteredLoans] = useState([]);
   const [users, setUsers] = useState([]);
   const [tools, setTools] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editLoan, setEditLoan] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [formData, setFormData] = useState({
     user_id: "",
     start_date: "",
-    location: "",
+    project_id: "",
     tools: [{ tool_id: "", quantity: 1 }],
   });
+  const [error, setError] = useState("");
 
   useEffect(() => {
     loadData();
@@ -58,22 +64,28 @@ export default function Loans() {
 
   const loadData = async () => {
     try {
-      const [loansData, usersData, toolsData] = await Promise.all([
+      setLoading(true);
+      const [loansData, usersData, toolsData, projectsData] = await Promise.all([
         getLoans(),
         getUsers(),
-        getTools()
+        getTools(),
+        getProjects()
       ]);
       setLoans(loansData);
       setFilteredLoans(loansData);
       setUsers(usersData);
       setTools(toolsData);
+      setProjects(projectsData);
     } catch (error) {
       console.error("Error loading data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSubmit = async () => {
     try {
+      setError("");
       if (editLoan) {
         const loanData = {
           user_id: formData.user_id,
@@ -90,7 +102,7 @@ export default function Loans() {
             const loanData = {
               user_id: formData.user_id,
               start_date: formData.start_date,
-              location: formData.location,
+              project_id: formData.project_id,
               tool_id: tool.tool_id,
               quantity: tool.quantity
             };
@@ -101,12 +113,12 @@ export default function Loans() {
       loadData();
       handleClose();
     } catch (error) {
-      console.error("Error saving loan:", error);
+      setError(error.message);
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure?")) {
+    if (window.confirm("Êtes-vous sûr ?")) {
       try {
         await deleteLoan(id);
         loadData();
@@ -121,7 +133,7 @@ export default function Loans() {
     setFormData({
       user_id: loan.user_id || "",
       start_date: loan.start_date ? loan.start_date.split('T')[0] : "",
-      location: loan.location || "",
+      project_id: loan.project_id || "",
       tools: [{ tool_id: loan.tool_id || "", quantity: loan.quantity || 1 }],
     });
     setOpen(true);
@@ -130,10 +142,11 @@ export default function Loans() {
   const handleClose = () => {
     setOpen(false);
     setEditLoan(null);
+    setError("");
     setFormData({
       user_id: "",
       start_date: "",
-      location: "",
+      project_id: "",
       tools: [{ tool_id: "", quantity: 1 }],
     });
   };
@@ -165,30 +178,34 @@ export default function Loans() {
   const getQuantityError = (toolId, requestedQuantity) => {
     const tool = getSelectedTool(toolId);
     if (tool && requestedQuantity > tool.quantity) {
-      return `Only ${tool.quantity} available`;
+      return `Seulement ${tool.quantity} disponible`;
     }
     return null;
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "borrowed": return "primary";
-      case "returned": return "success";
-      case "overdue": return "error";
-      default: return "default";
-    }
-  };
+
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <CircularProgress />
+        <Typography variant="body2" className="ml-2 text-gray-500">
+          Chargement des prêts...
+        </Typography>
+      </div>
+    );
+  }
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <Typography variant="h4" className="font-bold text-green-700">
-          Loans Management
+          Gestion des Prêts
         </Typography>
         <div className="flex gap-4">
           <TextField
             size="small"
-            placeholder="Search loans..."
+            placeholder="Rechercher des prêts..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             InputProps={{
@@ -201,7 +218,7 @@ export default function Loans() {
             onClick={() => setOpen(true)}
             className="bg-green-600 hover:bg-green-700"
           >
-            Add Loan
+            Ajouter Prêt
           </Button>
         </div>
       </div>
@@ -210,14 +227,14 @@ export default function Loans() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Tool Image</TableCell>
-              <TableCell>User</TableCell>
-              <TableCell>Tool</TableCell>
-              <TableCell>Start Date</TableCell>
-              <TableCell>Return Date</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Quantity</TableCell>
-              <TableCell>Location</TableCell>
+              <TableCell>Image Outil</TableCell>
+              <TableCell>Utilisateur</TableCell>
+              <TableCell>Outil</TableCell>
+              <TableCell>Date Début</TableCell>
+              <TableCell>Date Retour</TableCell>
+              <TableCell>Statut</TableCell>
+              <TableCell>Quantité</TableCell>
+              <TableCell>Projet</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -234,13 +251,13 @@ export default function Loans() {
                 </TableCell>
                 <TableCell>{loan.users?.name || "N/A"}</TableCell>
                 <TableCell>{loan.tools?.name || "N/A"}</TableCell>
-                <TableCell>{loan.start_date ? new Date(loan.start_date).toLocaleDateString() : "N/A"}</TableCell>
-                <TableCell>{loan.return_date ? new Date(loan.return_date).toLocaleDateString() : "N/A"}</TableCell>
+                <TableCell>{formatDate(loan.start_date)}</TableCell>
+                <TableCell>{formatDate(loan.return_date)}</TableCell>
                 <TableCell>
                   <Chip label={loan.status} color={getStatusColor(loan.status)} size="small" />
                 </TableCell>
                 <TableCell>{loan.quantity}</TableCell>
-                <TableCell>{loan.location}</TableCell>
+                <TableCell>{loan.projects?.name || "N/A"}</TableCell>
                 <TableCell>
                   <IconButton onClick={() => handleEdit(loan)} color="primary">
                     <Edit />
@@ -256,10 +273,10 @@ export default function Loans() {
       </TableContainer>
 
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle>{editLoan ? "Edit Loan" : "Add Loan"}</DialogTitle>
+        <DialogTitle>{editLoan ? "Modifier Prêt" : "Ajouter Prêt"}</DialogTitle>
         <DialogContent className="space-y-4">
           <FormControl fullWidth margin="normal">
-            <InputLabel>User</InputLabel>
+            <InputLabel>Utilisateur</InputLabel>
             <Select
               value={formData.user_id}
               onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
@@ -274,10 +291,10 @@ export default function Loans() {
           
           <div>
             <div className="flex justify-between items-center mb-2">
-              <Typography variant="subtitle1">Tools</Typography>
+              <Typography variant="subtitle1">Outils</Typography>
               {!editLoan && (
                 <Button size="small" onClick={addTool} variant="outlined">
-                  Add Tool
+                  Ajouter Outil
                 </Button>
               )}
             </div>
@@ -298,26 +315,36 @@ export default function Loans() {
                     )}
                     <div className="flex-1">
                       <FormControl fullWidth margin="dense">
-                        <InputLabel>Tool</InputLabel>
+                        <InputLabel>Outil</InputLabel>
                         <Select
                           value={tool.tool_id}
                           onChange={(e) => updateTool(index, 'tool_id', e.target.value)}
                         >
                           {tools.map((t) => (
-                            <MenuItem key={t.id} value={t.id}>
-                              {t.name}
+                            <MenuItem 
+                              key={t.id} 
+                              value={t.id}
+                              disabled={!t.availability || t.quantity === 0}
+                              sx={{
+                                color: !t.availability ? '#f97316' : t.quantity === 0 ? '#ef4444' : 'inherit',
+                                backgroundColor: !t.availability ? '#fef3cd' : t.quantity === 0 ? '#fef2f2' : 'inherit'
+                              }}
+                            >
+                              {t.name} 
+                              {!t.availability && ' (En maintenance)'}
+                              {t.availability && t.quantity === 0 && ' (Rupture de stock)'}
                             </MenuItem>
                           ))}
                         </Select>
                       </FormControl>
                       <div className="flex gap-2 items-center mt-2">
                         <TextField
-                          label="Quantity"
+                          label="Quantité"
                           type="number"
                           value={tool.quantity}
                           onChange={(e) => updateTool(index, 'quantity', e.target.value)}
                           error={!!quantityError}
-                          helperText={quantityError || (selectedTool ? `Available: ${selectedTool.quantity}` : '')}
+                          helperText={quantityError || (selectedTool ? `Disponible: ${selectedTool.quantity}` : '')}
                           sx={{ width: 120 }}
                         />
                         {!editLoan && formData.tools.length > 1 && (
@@ -335,25 +362,36 @@ export default function Loans() {
           
           <TextField
             fullWidth
-            label="Start Date"
+            label="Date de Début"
             type="date"
             value={formData.start_date}
             onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
             margin="normal"
             InputLabelProps={{ shrink: true }}
           />
-          <TextField
-            fullWidth
-            label="Location"
-            value={formData.location}
-            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-            margin="normal"
-          />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Projet</InputLabel>
+            <Select
+              value={formData.project_id}
+              onChange={(e) => setFormData({ ...formData, project_id: e.target.value })}
+            >
+              {projects.map((project) => (
+                <MenuItem key={project.id} value={project.id}>
+                  {project.name} - {project.address}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          {error && (
+            <Typography color="error" variant="body2" className="mt-2">
+              {error}
+            </Typography>
+          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleClose}>Annuler</Button>
           <Button onClick={handleSubmit} variant="contained">
-            {editLoan ? "Update" : "Create"}
+            {editLoan ? "Modifier" : "Créer"}
           </Button>
         </DialogActions>
       </Dialog>

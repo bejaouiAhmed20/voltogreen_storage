@@ -23,13 +23,18 @@ import {
   Chip,
   Grid,
   MenuItem,
+  CircularProgress,
 } from "@mui/material";
-import { Add, Edit, Delete, Search, Build, Image } from "@mui/icons-material";
+import { Add, Edit, Delete, Search, Build, Image, Assignment } from "@mui/icons-material";
 import { getTools, createTool, updateTool, deleteTool, uploadToolImage } from "../services/toolService";
+import { getToolLoanHistory } from "../services/loanService";
+import { TOOL_TYPES, TOOL_CONDITIONS, LOW_STOCK_THRESHOLD } from "../utils/constants";
+import { formatCurrency, getConditionColor, isLowStock, formatDate, getStatusColor } from "../utils/helpers";
 
 export default function Tools() {
   const [tools, setTools] = useState([]);
   const [filteredTools, setFilteredTools] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editTool, setEditTool] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -44,9 +49,12 @@ export default function Tools() {
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [selectedTool, setSelectedTool] = useState(null);
+  const [loanHistory, setLoanHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
-  const toolTypes = ["Basic Hand Tools", "Electrical Tools", "Power Tools", "Installation & Mounting Tools", "Safety & Protective Equipment", "Specialized Solar Tools"];
-  const conditions = ["new", "excellent", "good", "fair", "poor", "needs_repair"];
+
 
   useEffect(() => {
     loadTools();
@@ -58,10 +66,13 @@ export default function Tools() {
 
   const loadTools = async () => {
     try {
+      setLoading(true);
       const data = await getTools();
       setTools(data);
     } catch (error) {
       console.error("Erreur lors du chargement des outils:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -146,17 +157,38 @@ export default function Tools() {
     });
   };
 
-  const getConditionColor = (condition) => {
-    const colors = {
-      "new": "#10b981",
-      "excellent": "#22c55e",
-      "good": "#84cc16",
-      "fair": "#eab308",
-      "poor": "#f97316",
-      "needs_repair": "#ef4444"
-    };
-    return colors[condition] || "#6b7280";
+  const handleViewHistory = async (tool) => {
+    try {
+      setHistoryLoading(true);
+      setSelectedTool(tool);
+      const history = await getToolLoanHistory(tool.id);
+      setLoanHistory(history);
+      setHistoryOpen(true);
+    } catch (error) {
+      console.error("Erreur lors du chargement de l'historique:", error);
+    } finally {
+      setHistoryLoading(false);
+    }
   };
+
+  const handleCloseHistory = () => {
+    setHistoryOpen(false);
+    setSelectedTool(null);
+    setLoanHistory([]);
+  };
+
+
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <CircularProgress />
+        <Typography variant="body2" className="ml-2 text-gray-500">
+          Chargement des outils...
+        </Typography>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -265,7 +297,12 @@ export default function Tools() {
                     </Avatar>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body1" className="font-medium text-gray-900">
+                    <Typography 
+                      variant="body1" 
+                      className="font-medium text-gray-900 cursor-pointer hover:text-green-600 transition-colors"
+                      onClick={() => handleViewHistory(tool)}
+                      title="Cliquer pour voir l'historique"
+                    >
                       {tool.name}
                     </Typography>
                   </TableCell>
@@ -298,7 +335,7 @@ export default function Tools() {
                         variant="body1" 
                         className={`font-bold ${
                           tool.quantity === 0 ? "text-red-600" : 
-                          tool.quantity < 5 ? "text-amber-600" : "text-green-600"
+                          isLowStock(tool.quantity, LOW_STOCK_THRESHOLD) ? "text-amber-600" : "text-green-600"
                         }`}
                       >
                         {tool.quantity}
@@ -312,7 +349,7 @@ export default function Tools() {
                   </TableCell>
                   <TableCell>
                     <Typography variant="body1" className="font-semibold text-gray-900">
-                      {tool.price?.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                      {formatCurrency(tool.price)}
                     </Typography>
                   </TableCell>
                   <TableCell>
@@ -405,7 +442,7 @@ export default function Tools() {
                 }
               }}
             >
-              {toolTypes.map(type => (
+              {TOOL_TYPES.map(type => (
                 <MenuItem key={type} value={type}>{type}</MenuItem>
               ))}
             </TextField>
@@ -421,7 +458,7 @@ export default function Tools() {
                 }
               }}
             >
-              {conditions.map(condition => (
+              {TOOL_CONDITIONS.map(condition => (
                 <MenuItem key={condition} value={condition}>{condition}</MenuItem>
               ))}
             </TextField>
@@ -514,6 +551,114 @@ export default function Tools() {
             }}
           >
             {uploading ? "Téléchargement..." : editTool ? "Mettre à jour" : "Créer"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Tool History Dialog */}
+      <Dialog 
+        open={historyOpen} 
+        onClose={handleCloseHistory} 
+        maxWidth="lg" 
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: "16px",
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          backgroundColor: "#f8fafc",
+          borderBottom: "1px solid #e5e7eb",
+          fontWeight: "600"
+        }}>
+          Historique des prêts - {selectedTool?.name}
+        </DialogTitle>
+        <DialogContent sx={{ padding: "24px" }}>
+          {historyLoading ? (
+            <Box className="flex justify-center items-center py-8">
+              <CircularProgress />
+              <Typography variant="body2" className="ml-2 text-gray-500">
+                Chargement de l'historique...
+              </Typography>
+            </Box>
+          ) : loanHistory.length === 0 ? (
+            <Box className="text-center py-8">
+              <Assignment sx={{ fontSize: 48, color: "#9ca3af", mb: 2 }} />
+              <Typography variant="h6" className="mb-2 text-gray-500">
+                Aucun historique de prêt
+              </Typography>
+              <Typography variant="body2" className="text-gray-400">
+                Cet outil n'a jamais été emprunté
+              </Typography>
+            </Box>
+          ) : (
+            <TableContainer component={Paper} sx={{ borderRadius: "12px", mt: 2 }}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: "#f9fafb" }}>
+                    <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Utilisateur</TableCell>
+                    <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Projet</TableCell>
+                    <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Date Début</TableCell>
+                    <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Date Retour</TableCell>
+                    <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Quantité</TableCell>
+                    <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Statut</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {loanHistory.map((loan) => (
+                    <TableRow key={loan.id} sx={{ "&:hover": { backgroundColor: "#f9fafb" } }}>
+                      <TableCell>
+                        <Typography variant="body2" className="font-medium">
+                          {loan.users?.name || "N/A"}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">
+                          {loan.projects?.name || "N/A"}
+                        </Typography>
+                        <Typography variant="caption" className="text-gray-500">
+                          {loan.projects?.address || ""}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">
+                          {formatDate(loan.start_date)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">
+                          {formatDate(loan.return_date)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" className="font-medium">
+                          {loan.quantity}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={loan.status}
+                          color={getStatusColor(loan.status)}
+                          size="small"
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ padding: "20px 24px" }}>
+          <Button 
+            onClick={handleCloseHistory}
+            variant="outlined"
+            sx={{
+              borderRadius: "8px",
+            }}
+          >
+            Fermer
           </Button>
         </DialogActions>
       </Dialog>

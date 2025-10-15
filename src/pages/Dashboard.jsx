@@ -19,16 +19,18 @@ import {
   Menu,
   MenuItem,
 } from "@mui/material";
-import { People, Build, Assignment, BarChart, Settings, Logout, AccountCircle } from "@mui/icons-material";
+import { People, Build, Assignment, BarChart, Settings, Logout, AccountCircle, Assessment, Work } from "@mui/icons-material";
 
 const drawerWidth = 260;
 
 const menuItems = [
+  { text: "Statistiques", icon: <BarChart />, path: "/dashboard/stats" },
   { text: "Utilisateurs", icon: <People />, path: "/dashboard/users" },
+  { text: "Projets", icon: <Work />, path: "/dashboard/projects" },
   { text: "Outils", icon: <Build />, path: "/dashboard/tools" },
   { text: "Prêts", icon: <Assignment />, path: "/dashboard/loan" },
+  { text: "Activité", icon: <Assessment />, path: "/dashboard/activity" },
   { text: "Maintenance", icon: <Settings />, path: "/dashboard/maintenance" },
-  { text: "Statistiques", icon: <BarChart />, path: "/dashboard/stats" },
 ];
 
 export default function Dashboard() {
@@ -135,7 +137,7 @@ export default function Dashboard() {
               <MenuItem onClick={() => {navigate("/dashboard/profile")}} className="flex items-center space-x-2">
                 <AccountCircle sx={{ fontSize: 20, color: "#6b7280" }} />
                 <Typography variant="body2" className="text-gray-700">
-                  Mon profil
+                  Mon Profil
                 </Typography>
               </MenuItem>
               <MenuItem onClick={handleLogout} className="flex items-center space-x-2">

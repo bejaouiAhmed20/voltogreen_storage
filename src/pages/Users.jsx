@@ -17,26 +17,31 @@ import {
   IconButton,
   Checkbox,
   FormControlLabel,
+  Avatar,
   Box,
+  CircularProgress,
   InputAdornment,
-  Chip,
 } from "@mui/material";
-import { Add, Edit, Delete, Search, Person } from "@mui/icons-material";
-import { getUsers, createUser, updateUser, deleteUser } from "../services/userService";
+import { Add, Edit, Delete, Person, Search } from "@mui/icons-material";
+import { getUsers, createUser, updateUser, deleteUser, uploadUserImage } from "../services/userService";
 
 export default function Users() {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
   const [open, setOpen] = useState(false);
   const [editUser, setEditUser] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     cin: "",
     role: "",
     password: "",
     is_admin: false,
+    picture: "",
   });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     loadUsers();
@@ -48,10 +53,13 @@ export default function Users() {
 
   const loadUsers = async () => {
     try {
+      setLoading(true);
       const data = await getUsers();
       setUsers(data);
     } catch (error) {
-      console.error("Erreur lors du chargement des utilisateurs:", error);
+      console.error("Error loading users:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -71,47 +79,75 @@ export default function Users() {
 
   const handleSubmit = async () => {
     try {
+      setUploading(true);
+      let userData = { ...formData };
+      
+      if (selectedFile) {
+        const imageUrl = await uploadUserImage(selectedFile);
+        userData.picture = imageUrl;
+      }
+      
       if (editUser) {
-        await updateUser(editUser.id, formData);
+        await updateUser(editUser.id, userData);
       } else {
-        await createUser(formData);
+        await createUser(userData);
       }
       loadUsers();
       handleClose();
     } catch (error) {
-      console.error("Erreur lors de la sauvegarde de l'utilisateur:", error);
+      console.error("Error saving user:", error);
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")) {
+    if (window.confirm("Êtes-vous sûr ?")) {
       try {
         await deleteUser(id);
         loadUsers();
       } catch (error) {
-        console.error("Erreur lors de la suppression de l'utilisateur:", error);
+        console.error("Error deleting user:", error);
       }
     }
   };
 
   const handleEdit = (user) => {
     setEditUser(user);
-    setFormData(user);
+    setFormData({
+      name: user.name || "",
+      cin: user.cin || "",
+      role: user.role || "",
+      password: user.password || "",
+      is_admin: user.is_admin || false,
+      picture: user.picture || "",
+    });
     setOpen(true);
   };
 
   const handleClose = () => {
     setOpen(false);
     setEditUser(null);
-    setFormData({ name: "", cin: "", role: "", password: "", is_admin: false });
+    setSelectedFile(null);
+    setFormData({ name: "", cin: "", role: "", password: "", is_admin: false, picture: "" });
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <CircularProgress />
+        <Typography variant="body2" className="ml-2 text-gray-500">
+          Chargement des utilisateurs...
+        </Typography>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4">
-      {/* Header Section */}
-      <div className="flex justify-between items-center mb-6 ">
+    <div>
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <Typography variant="h4" className="font-bold text-gray-900">
+          <Typography variant="h4" className="font-bold text-green-700">
             Gestion des Utilisateurs
           </Typography>
           <Typography variant="body2" className="text-gray-600 mt-1">
@@ -122,22 +158,16 @@ export default function Users() {
           variant="contained"
           startIcon={<Add />}
           onClick={() => setOpen(true)}
-          sx={{
-            background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-            "&:hover": {
-              background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
-            },
-          }}
+          className="bg-green-600 hover:bg-green-700"
         >
-          Ajouter un utilisateur
+          Ajouter Utilisateur
         </Button>
       </div>
 
-      {/* Search Bar */}
       <Box className="mb-6">
         <TextField
           fullWidth
-          placeholder="Rechercher un utilisateur par nom, CIN ou rôle..."
+          placeholder="Rechercher par nom, CIN ou rôle..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           InputProps={{
@@ -156,156 +186,92 @@ export default function Users() {
         />
       </Box>
 
-      {/* Users Table */}
-      <TableContainer 
-        component={Paper}
-        sx={{
-          borderRadius: "12px",
-          border: "1px solid #e5e7eb",
-          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-        }}
-      >
+      <TableContainer component={Paper}>
         <Table>
           <TableHead>
-            <TableRow sx={{ backgroundColor: "#f9fafb" }}>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>ID</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Utilisateur</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>CIN</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Rôle</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151" }}>Statut</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151", textAlign: "center" }}>Actions</TableCell>
+            <TableRow>
+              <TableCell>Photo</TableCell>
+              <TableCell>Nom</TableCell>
+              <TableCell>CIN</TableCell>
+              <TableCell>Rôle</TableCell>
+              <TableCell>Admin</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredUsers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} align="center" className="py-8 text-gray-500">
+                <TableCell colSpan={6} align="center" className="py-12 text-gray-500">
                   <Person sx={{ fontSize: 48, color: "#9ca3af", mb: 2 }} />
-                  <Typography variant="body1">
+                  <Typography variant="h6" className="mb-2">
                     {searchTerm ? "Aucun utilisateur trouvé" : "Aucun utilisateur"}
+                  </Typography>
+                  <Typography variant="body2">
+                    {searchTerm ? "Ajustez vos critères de recherche" : "Ajoutez votre premier utilisateur"}
                   </Typography>
                 </TableCell>
               </TableRow>
             ) : (
               filteredUsers.map((user) => (
-                <TableRow 
-                  key={user.id}
-                  sx={{ 
-                    "&:hover": { backgroundColor: "#f9fafb" },
-                    transition: "background-color 0.2s ease"
-                  }}
-                >
-                  <TableCell className="text-gray-600 font-mono">{user.id}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-3">
-                      <Avatar
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          backgroundColor: "#ecfdf5",
-                          color: "#059669",
-                          fontWeight: "bold",
-                          fontSize: "0.875rem",
-                        }}
-                      >
-                        {user.name?.charAt(0).toUpperCase() || "U"}
-                      </Avatar>
-                      <div>
-                        <Typography variant="body1" className="font-medium text-gray-900">
-                          {user.name}
-                        </Typography>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-gray-600 font-mono">{user.cin}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={user.role || "Non défini"}
-                      size="small"
-                      sx={{
-                        backgroundColor: "#f3f4f6",
-                        color: "#374151",
-                        fontWeight: "500",
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={user.is_admin ? "Administrateur" : "Utilisateur"}
-                      size="small"
-                      sx={{
-                        backgroundColor: user.is_admin ? "#fef3c7" : "#ecfdf5",
-                        color: user.is_admin ? "#92400e" : "#065f46",
-                        fontWeight: "500",
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex justify-center space-x-1">
-                      <IconButton 
-                        onClick={() => handleEdit(user)}
-                        sx={{
-                          color: "#6b7280",
-                          "&:hover": {
-                            backgroundColor: "#eff6ff",
-                            color: "#3b82f6",
-                          },
-                        }}
-                      >
-                        <Edit fontSize="small" />
-                      </IconButton>
-                      <IconButton 
-                        onClick={() => handleDelete(user.id)}
-                        sx={{
-                          color: "#6b7280",
-                          "&:hover": {
-                            backgroundColor: "#fef2f2",
-                            color: "#ef4444",
-                          },
-                        }}
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
-                    </div>
-                  </TableCell>
-                </TableRow>
+              <TableRow key={user.id}>
+                <TableCell>
+                  <Avatar
+                    src={user.picture}
+                    sx={{ width: 40, height: 40 }}
+                  >
+                    <Person />
+                  </Avatar>
+                </TableCell>
+                <TableCell>{user.name}</TableCell>
+                <TableCell>{user.cin}</TableCell>
+                <TableCell>{user.role}</TableCell>
+                <TableCell>{user.is_admin ? "Oui" : "Non"}</TableCell>
+                <TableCell>
+                  <IconButton onClick={() => handleEdit(user)} color="primary">
+                    <Edit />
+                  </IconButton>
+                  <IconButton onClick={() => handleDelete(user.id)} color="error">
+                    <Delete />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
               ))
             )}
           </TableBody>
         </Table>
       </TableContainer>
 
-      {/* Add/Edit User Dialog */}
-      <Dialog 
-        open={open} 
-        onClose={handleClose} 
-        maxWidth="sm" 
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: "16px",
-          }
-        }}
-      >
-        <DialogTitle sx={{ 
-          backgroundColor: "#f8fafc",
-          borderBottom: "1px solid #e5e7eb",
-          fontWeight: "600"
-        }}>
-          {editUser ? "Modifier l'utilisateur" : "Ajouter un utilisateur"}
-        </DialogTitle>
-        <DialogContent className="space-y-4 pt-4">
+      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+        <DialogTitle>{editUser ? "Modifier Utilisateur" : "Ajouter Utilisateur"}</DialogTitle>
+        <DialogContent className="space-y-4">
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1, color: "#374151" }}>
+              Photo de Profil
+            </Typography>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setSelectedFile(e.target.files[0])}
+              style={{
+                padding: "8px",
+                border: "1px solid #d1d5db",
+                borderRadius: "8px",
+                width: "100%",
+                backgroundColor: "#f9fafb"
+              }}
+            />
+            {selectedFile && (
+              <Typography variant="caption" sx={{ color: "#059669", mt: 1, display: "block" }}>
+                Sélectionné: {selectedFile.name}
+              </Typography>
+            )}
+          </Box>
           <TextField
             fullWidth
-            label="Nom complet"
+            label="Nom"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             margin="normal"
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "8px",
-              }
-            }}
           />
           <TextField
             fullWidth
@@ -313,11 +279,6 @@ export default function Users() {
             value={formData.cin}
             onChange={(e) => setFormData({ ...formData, cin: e.target.value })}
             margin="normal"
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "8px",
-              }
-            }}
           />
           <TextField
             fullWidth
@@ -325,11 +286,6 @@ export default function Users() {
             value={formData.role}
             onChange={(e) => setFormData({ ...formData, role: e.target.value })}
             margin="normal"
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "8px",
-              }
-            }}
           />
           <TextField
             fullWidth
@@ -338,66 +294,24 @@ export default function Users() {
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             margin="normal"
-            helperText={editUser ? "Laisser vide pour ne pas modifier" : ""}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "8px",
-              }
-            }}
           />
           <FormControlLabel
             control={
               <Checkbox
                 checked={formData.is_admin}
                 onChange={(e) => setFormData({ ...formData, is_admin: e.target.checked })}
-                sx={{
-                  color: "#059669",
-                  "&.Mui-checked": {
-                    color: "#059669",
-                  },
-                }}
               />
             }
-            label="Accès administrateur"
+            label="Administrateur"
           />
         </DialogContent>
-        <DialogActions sx={{ padding: "20px 24px", gap: 1 }}>
-          <Button 
-            onClick={handleClose}
-            sx={{
-              color: "#6b7280",
-              "&:hover": {
-                backgroundColor: "#f3f4f6",
-              },
-            }}
-          >
-            Annuler
-          </Button>
-          <Button 
-            onClick={handleSubmit} 
-            variant="contained"
-            sx={{
-              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-              "&:hover": {
-                background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
-              },
-              borderRadius: "8px",
-            }}
-          >
-            {editUser ? "Mettre à jour" : "Créer"}
+        <DialogActions>
+          <Button onClick={handleClose}>Annuler</Button>
+          <Button onClick={handleSubmit} variant="contained" disabled={uploading}>
+            {uploading ? "Téléchargement..." : editUser ? "Modifier" : "Créer"}
           </Button>
         </DialogActions>
       </Dialog>
     </div>
   );
 }
-
-// Avatar component (add this if not already imported)
-const Avatar = ({ children, ...props }) => (
-  <Box
-    {...props}
-    className="flex items-center justify-center rounded-full"
-  >
-    {children}
-  </Box>
-);
