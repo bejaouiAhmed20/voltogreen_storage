@@ -48,6 +48,23 @@ export async function updateTool(id, tool) {
 }
 
 export async function deleteTool(id) {
+  // First delete related loans
+  const { error: loansError } = await supabase
+    .from("loans")
+    .delete()
+    .eq("tool_id", id);
+
+  if (loansError) throw new Error(loansError.message);
+
+  // Delete related maintenance records
+  const { error: maintenanceError } = await supabase
+    .from("maintenance")
+    .delete()
+    .eq("tool_id", id);
+
+  if (maintenanceError) throw new Error(maintenanceError.message);
+
+  // Then delete the tool
   const { error } = await supabase
     .from("tools")
     .delete()

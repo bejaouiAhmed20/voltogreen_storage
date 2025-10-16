@@ -32,6 +32,15 @@ export async function updateProject(id, project) {
 }
 
 export async function deleteProject(id) {
+  // First delete related loans
+  const { error: loansError } = await supabase
+    .from("loans")
+    .delete()
+    .eq("project_id", id);
+
+  if (loansError) throw new Error(loansError.message);
+
+  // Then delete the project
   const { error } = await supabase
     .from("projects")
     .delete()
