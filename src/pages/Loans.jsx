@@ -49,6 +49,7 @@ export default function Loans() {
     tools: [{ tool_id: "", quantity: 1 }],
   });
   const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     loadData();
@@ -97,7 +98,20 @@ export default function Loans() {
     }
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.user_id) newErrors.user_id = "L'utilisateur est requis";
+    if (!formData.start_date.trim()) newErrors.start_date = "La date de début est requise";
+    if (!formData.project_id) newErrors.project_id = "Le projet est requis";
+    if (formData.tools.some(tool => !tool.tool_id)) newErrors.tools = "Tous les outils doivent être sélectionnés";
+    if (formData.tools.some(tool => !tool.quantity || tool.quantity <= 0)) newErrors.quantity = "La quantité doit être supérieure à 0";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async () => {
+    if (!validateForm()) return;
+    
     try {
       setError("");
       if (editLoan) {
@@ -159,6 +173,7 @@ export default function Loans() {
     setOpen(false);
     setEditLoan(null);
     setError("");
+    setErrors({});
     setFormData({
       user_id: "",
       start_date: "",

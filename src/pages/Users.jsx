@@ -42,6 +42,7 @@ export default function Users() {
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     loadUsers();
@@ -77,7 +78,19 @@ export default function Users() {
     setFilteredUsers(filtered);
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.name.trim()) newErrors.name = "Le nom est requis";
+    if (!formData.cin.trim()) newErrors.cin = "Le CIN est requis";
+    if (!formData.role.trim()) newErrors.role = "Le rôle est requis";
+    if (!editUser && !formData.password.trim()) newErrors.password = "Le mot de passe est requis";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async () => {
+    if (!validateForm()) return;
+    
     try {
       setUploading(true);
       let userData = { ...formData };
@@ -129,6 +142,7 @@ export default function Users() {
     setOpen(false);
     setEditUser(null);
     setSelectedFile(null);
+    setErrors({});
     setFormData({ name: "", cin: "", role: "", password: "", is_admin: false, picture: "" });
   };
 
@@ -312,6 +326,8 @@ export default function Users() {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             margin="normal"
+            error={!!errors.name}
+            helperText={errors.name}
           />
           <TextField
             fullWidth
@@ -319,6 +335,8 @@ export default function Users() {
             value={formData.cin}
             onChange={(e) => setFormData({ ...formData, cin: e.target.value })}
             margin="normal"
+            error={!!errors.cin}
+            helperText={errors.cin}
           />
           <TextField
             fullWidth
@@ -326,6 +344,8 @@ export default function Users() {
             value={formData.role}
             onChange={(e) => setFormData({ ...formData, role: e.target.value })}
             margin="normal"
+            error={!!errors.role}
+            helperText={errors.role}
           />
           <TextField
             fullWidth
@@ -334,6 +354,8 @@ export default function Users() {
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             margin="normal"
+            error={!!errors.password}
+            helperText={errors.password}
           />
           <FormControlLabel
             control={

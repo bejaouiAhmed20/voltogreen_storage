@@ -53,6 +53,7 @@ export default function Tools() {
   const [selectedTool, setSelectedTool] = useState(null);
   const [loanHistory, setLoanHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
 
 
@@ -90,7 +91,21 @@ export default function Tools() {
     setFilteredTools(filtered);
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.name.trim()) newErrors.name = "Le nom est requis";
+    if (!formData.type.trim()) newErrors.type = "Le type est requis";
+    if (!formData.condition.trim()) newErrors.condition = "L'état est requis";
+    if (!formData.quantity || formData.quantity <= 0) newErrors.quantity = "La quantité doit être supérieure à 0";
+    if (!formData.price || formData.price <= 0) newErrors.price = "Le prix doit être supérieur à 0";
+    if (!formData.purchase_date.trim()) newErrors.purchase_date = "La date d'achat est requise";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async () => {
+    if (!validateForm()) return;
+    
     try {
       setUploading(true);
       let toolData = { 
@@ -146,6 +161,7 @@ export default function Tools() {
     setOpen(false);
     setEditTool(null);
     setSelectedFile(null);
+    setErrors({});
     setFormData({
       name: "",
       type: "",

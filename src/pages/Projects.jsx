@@ -47,6 +47,7 @@ export default function Projects() {
     end_date: "",
     status: "planifié",
   });
+  const [errors, setErrors] = useState({});
 
   const statuses = ["planifié", "actif", "terminé", "annulé"];
 
@@ -84,7 +85,18 @@ export default function Projects() {
     setFilteredProjects(filtered);
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.client_name || !formData.client_name.trim()) newErrors.client_name = "Le nom du client est requis";
+    if (!formData.address || !formData.address.trim()) newErrors.address = "L'adresse est requise";
+    if (!formData.start_date) newErrors.start_date = "La date de début est requise";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async () => {
+    if (!validateForm()) return;
+    
     try {
       if (editProject) {
         await updateProject(editProject.id, formData);
@@ -125,6 +137,7 @@ export default function Projects() {
   const handleClose = () => {
     setOpen(false);
     setEditProject(null);
+    setErrors({});
     setFormData({
       name: "",
       client_name: "",
@@ -393,6 +406,8 @@ export default function Projects() {
             value={formData.client_name}
             onChange={(e) => setFormData({ ...formData, client_name: e.target.value, name: e.target.value })}
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+            error={!!errors.client_name}
+            helperText={errors.client_name}
           />
           <TextField
             fullWidth
@@ -400,6 +415,8 @@ export default function Projects() {
             value={formData.address}
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+            error={!!errors.address}
+            helperText={errors.address}
           />
           <div className="grid grid-cols-3 gap-4">
             <TextField
@@ -410,6 +427,8 @@ export default function Projects() {
               onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
               InputLabelProps={{ shrink: true }}
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+              error={!!errors.start_date}
+              helperText={errors.start_date}
             />
             <TextField
               fullWidth
