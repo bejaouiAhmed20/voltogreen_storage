@@ -27,7 +27,7 @@ export async function getStats() {
       .reduce((sum, tool) => sum + (tool.price || 0), 0);
     const maintenanceCost = maintenance.reduce((sum, item) => sum + (item.cost || 0), 0);
     
-    const totalDamaged = loans.reduce((sum, loan) => sum + (loan.damaged_quantity || 0), 0);
+    const totalDamaged = loans.reduce((sum, loan) => sum + (loan.dameged_quantity || 0), 0);
     const totalLost = loans.reduce((sum, loan) => sum + (loan.lost_quantity || 0), 0);
     const totalInstalled = loans.reduce((sum, loan) => sum + (loan.installed_quantity || 0), 0);
 

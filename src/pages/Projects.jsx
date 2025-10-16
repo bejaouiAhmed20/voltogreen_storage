@@ -162,7 +162,7 @@ export default function Projects() {
   const getProjectStats = (loans) => {
     const totalLoaned = loans.reduce((sum, loan) => sum + (loan.quantity || 0), 0);
     const totalReturned = loans.reduce((sum, loan) => sum + (loan.returned_quantity || 0), 0);
-    const totalDamaged = loans.reduce((sum, loan) => sum + (loan.damaged_quantity || 0), 0);
+    const totalDamaged = loans.reduce((sum, loan) => sum + (loan.dameged_quantity || 0), 0);
     const totalLost = loans.reduce((sum, loan) => sum + (loan.lost_quantity || 0), 0);
     const totalInstalled = loans.reduce((sum, loan) => sum + (loan.installed_quantity || 0), 0);
     
@@ -619,7 +619,7 @@ export default function Projects() {
                                 <Chip label={`Donné: ${loan.quantity || 0}`} size="small" color="primary" variant="outlined" />
                                 {loan.returned_quantity > 0 && <Chip label={`Retourné: ${loan.returned_quantity}`} size="small" sx={{ bgcolor: "#dcfce7", color: "#166534" }} />}
                                 {loan.installed_quantity > 0 && <Chip label={`Installé: ${loan.installed_quantity}`} size="small" sx={{ bgcolor: "#d1fae5", color: "#065f46" }} />}
-                                {loan.damaged_quantity > 0 && <Chip label={`Endommagé: ${loan.damaged_quantity}`} size="small" sx={{ bgcolor: "#fee2e2", color: "#991b1b" }} />}
+                                {loan.dameged_quantity > 0 && <Chip label={`Endommagé: ${loan.dameged_quantity}`} size="small" sx={{ bgcolor: "#fee2e2", color: "#991b1b" }} />}
                                 {loan.lost_quantity > 0 && <Chip label={`Perdu: ${loan.lost_quantity}`} size="small" sx={{ bgcolor: "#fed7aa", color: "#9a3412" }} />}
                               </Box>
                             </TableCell>

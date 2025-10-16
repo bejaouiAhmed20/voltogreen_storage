@@ -340,89 +340,120 @@ export default function Stats() {
 
       {/* Stats Grid */}
       {stats && (
-        <Grid container spacing={3}>
-          {/* Main Stats */}
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Utilisateurs"
-              value={stats.totalUsers?.toLocaleString() || "0"}
-              icon={<People />}
-              color="#3b82f6"
-              subtitle="Total des utilisateurs"
-              trend={{ value: 5 }} // Example trend data
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Outils"
-              value={stats.totalTools?.toLocaleString() || "0"}
-              icon={<Build />}
-              color="#10b981"
-              subtitle="Total des outils"
-              trend={{ value: 2 }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Prêts"
-              value={stats.totalLoans?.toLocaleString() || "0"}
-              icon={<Assignment />}
-              color="#f59e0b"
-              subtitle="Total des prêts"
-              trend={{ value: -1 }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Maintenances"
-              value={stats.totalMaintenance?.toLocaleString() || "0"}
-              icon={<Settings />}
-              color="#8b5cf6"
-              subtitle="Total des interventions"
-              trend={{ value: 3 }}
-            />
-          </Grid>
+        <>
+          {/* Main Overview Stats */}
+          <Paper sx={{ p: 3, mb: 4, borderRadius: 3 }}>
+            <Typography variant="h6" sx={{ fontWeight: "bold", mb: 3, color: "#374151" }}>
+              Vue d'ensemble générale
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6} md={3}>
+                <StatCard
+                  title="Utilisateurs"
+                  value={stats.totalUsers?.toLocaleString() || "0"}
+                  icon={<People />}
+                  color="#3b82f6"
+                  subtitle="Total des utilisateurs"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <StatCard
+                  title="Outils"
+                  value={stats.totalTools?.toLocaleString() || "0"}
+                  icon={<Build />}
+                  color="#10b981"
+                  subtitle="Total des outils"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <StatCard
+                  title="Prêts"
+                  value={stats.totalLoans?.toLocaleString() || "0"}
+                  icon={<Assignment />}
+                  color="#f59e0b"
+                  subtitle="Total des prêts"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <StatCard
+                  title="Maintenances"
+                  value={stats.totalMaintenance?.toLocaleString() || "0"}
+                  icon={<Settings />}
+                  color="#8b5cf6"
+                  subtitle="Total des interventions"
+                />
+              </Grid>
+            </Grid>
+          </Paper>
 
-          {/* Secondary Stats */}
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Outils Endommagés"
-              value={stats.damagedTools?.toLocaleString() || "0"}
-              icon={<Warning />}
-              color="#ef4444"
-              subtitle="Nécessitent réparation"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Achats Mensuels"
-              value={`${(stats.monthlyPurchases || 0).toLocaleString()} TND`}
-              icon={<TrendingUp />}
-              color="#06b6d4"
-              subtitle="Ce mois"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Coût Maintenance"
-              value={`${(stats.maintenanceCost || 0).toLocaleString()} TND`}
-              icon={<Settings />}
-              color="#f97316"
-              subtitle="Total dépensé"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Projets Actifs"
-              value={stats.activeProjects?.toLocaleString() || "0"}
-              icon={<Analytics />}
-              color="#8b5cf6"
-              subtitle="En cours"
-            />
-          </Grid>
+          {/* Tool Status Stats */}
+          <Paper sx={{ p: 3, mb: 4, borderRadius: 3 }}>
+            <Typography variant="h6" sx={{ fontWeight: "bold", mb: 3, color: "#374151" }}>
+              État des outils
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6} md={3}>
+                <StatCard
+                  title="Outils Installés"
+                  value={stats.totalInstalled?.toLocaleString() || "0"}
+                  icon={<Analytics />}
+                  color="#10b981"
+                  subtitle="Total installés"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <StatCard
+                  title="Outils Endommagés"
+                  value={stats.totalDamaged?.toLocaleString() || "0"}
+                  icon={<Warning />}
+                  color="#ef4444"
+                  subtitle="Total endommagés"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <StatCard
+                  title="Outils Perdus"
+                  value={stats.totalLost?.toLocaleString() || "0"}
+                  icon={<Warning />}
+                  color="#f97316"
+                  subtitle="Total perdus"
+                />
+              </Grid>
+             
+            </Grid>
+          </Paper>
+
+          {/* Financial Stats */}
+          <Paper sx={{ p: 3, mb: 4, borderRadius: 3 }}>
+            <Typography variant="h6" sx={{ fontWeight: "bold", mb: 3, color: "#374151" }}>
+              Statistiques financières
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <StatCard
+                  title="Achats Mensuels"
+                  value={`${(stats.monthlyPurchases || 0).toLocaleString()} TND`}
+                  icon={<TrendingUp />}
+                  color="#06b6d4"
+                  subtitle="Ce mois"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <StatCard
+                  title="Coût Maintenance"
+                  value={`${(stats.maintenanceCost || 0).toLocaleString()} TND`}
+                  icon={<Settings />}
+                  color="#f97316"
+                  subtitle="Total dépensé"
+                />
+              </Grid>
+            </Grid>
+          </Paper>
+        </>
+      )}
 
           {/* Analytics Section */}
-          <Grid item xs={12}>
+          {stats && (
             <Paper sx={{ 
               p: 4, 
               borderRadius: 4, 
@@ -567,9 +598,7 @@ export default function Stats() {
                 </Grid>
               </Grid>
             </Paper>
-          </Grid>
-        </Grid>
-      )}
+          )}
     </Box>
   );
 }

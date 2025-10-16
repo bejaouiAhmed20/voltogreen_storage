@@ -20,7 +20,7 @@ export const TOOL_CONDITIONS = [
 export const LOAN_STATUSES = [
   "emprunté",
   "retourné", 
-  "en_retard"
+  "installée"
 ];
 
 export const LOW_STOCK_THRESHOLD = 5;

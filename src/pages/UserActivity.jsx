@@ -31,6 +31,7 @@ export default function UserActivity() {
   const [filteredLoans, setFilteredLoans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [dateFilter, setDateFilter] = useState({ start: "", end: "" });
   const [summary, setSummary] = useState({
     totalDamaged: 0,
     totalLost: 0,
@@ -43,7 +44,7 @@ export default function UserActivity() {
 
   useEffect(() => {
     filterLoans();
-  }, [loans, searchTerm]);
+  }, [loans, searchTerm, dateFilter]);
 
   const loadData = async () => {
     try {
@@ -76,6 +77,17 @@ export default function UserActivity() {
           loan.users?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           loan.tools?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           loan.projects?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (dateFilter.start) {
+      filtered = filtered.filter(loan => 
+        new Date(loan.start_date) >= new Date(dateFilter.start)
+      );
+    }
+    if (dateFilter.end) {
+      filtered = filtered.filter(loan => 
+        new Date(loan.start_date) <= new Date(dateFilter.end)
       );
     }
 
@@ -173,7 +185,7 @@ export default function UserActivity() {
       </Grid>
 
       {/* Filters */}
-      <Box className="mb-6">
+      <Box className="mb-6 space-y-4">
         <TextField
           fullWidth
           placeholder="Rechercher par utilisateur, outil ou projet..."
@@ -188,6 +200,24 @@ export default function UserActivity() {
           }}
           sx={{ "& .MuiOutlinedInput-root": { borderRadius: "12px" } }}
         />
+        <Box className="flex gap-4">
+          <TextField
+            label="Date début"
+            type="date"
+            value={dateFilter.start}
+            onChange={(e) => setDateFilter({...dateFilter, start: e.target.value})}
+            InputLabelProps={{ shrink: true }}
+            sx={{ width: 200, "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+          />
+          <TextField
+            label="Date fin"
+            type="date"
+            value={dateFilter.end}
+            onChange={(e) => setDateFilter({...dateFilter, end: e.target.value})}
+            InputLabelProps={{ shrink: true }}
+            sx={{ width: 200, "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+          />
+        </Box>
       </Box>
 
       {/* Activity Table */}

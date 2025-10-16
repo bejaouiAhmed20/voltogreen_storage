@@ -40,6 +40,7 @@ export default function Loans() {
   const [open, setOpen] = useState(false);
   const [editLoan, setEditLoan] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [dateFilter, setDateFilter] = useState({ start: "", end: "" });
   const [formData, setFormData] = useState({
     user_id: "",
     start_date: "",
@@ -54,14 +55,26 @@ export default function Loans() {
   }, []);
 
   useEffect(() => {
-    const filtered = loans.filter(loan =>
+    let filtered = loans.filter(loan =>
       loan.users?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       loan.tools?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       loan.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       loan.location?.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    if (dateFilter.start) {
+      filtered = filtered.filter(loan => 
+        new Date(loan.start_date) >= new Date(dateFilter.start)
+      );
+    }
+    if (dateFilter.end) {
+      filtered = filtered.filter(loan => 
+        new Date(loan.start_date) <= new Date(dateFilter.end)
+      );
+    }
+
     setFilteredLoans(filtered);
-  }, [searchTerm, loans]);
+  }, [searchTerm, dateFilter, loans]);
 
   const loadData = async () => {
     try {
@@ -216,6 +229,24 @@ export default function Loans() {
               startAdornment: <Search className="mr-2 text-gray-400" />
             }}
           />
+          <TextField
+            size="small"
+            label="Date début"
+            type="date"
+            value={dateFilter.start}
+            onChange={(e) => setDateFilter({...dateFilter, start: e.target.value})}
+            InputLabelProps={{ shrink: true }}
+            sx={{ width: 150 }}
+          />
+          <TextField
+            size="small"
+            label="Date fin"
+            type="date"
+            value={dateFilter.end}
+            onChange={(e) => setDateFilter({...dateFilter, end: e.target.value})}
+            InputLabelProps={{ shrink: true }}
+            sx={{ width: 150 }}
+          />
           <Button
             variant="contained"
             startIcon={<Add />}
@@ -246,38 +277,46 @@ export default function Loans() {
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: "#f9fafb" }}>
-              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Image Outil</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Utilisateur</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Outil</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Date Début</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Date Retour</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Statut</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Quantité</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px" }}>Projet</TableCell>
-              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "12px 16px", fontSize: "16px", textAlign: "center" }}>Actions</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "8px 12px", fontSize: "14px" }}>Image</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "8px 12px", fontSize: "14px" }}>Utilisateur</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "8px 12px", fontSize: "14px" }}>Outil</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "8px 12px", fontSize: "14px" }}>Début</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "8px 12px", fontSize: "14px" }}>Retour</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "8px 12px", fontSize: "14px" }}>Statut</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "8px 12px", fontSize: "14px" }}>Qty</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "8px 12px", fontSize: "14px" }}>Ret.</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "8px 12px", fontSize: "14px" }}>Inst.</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "8px 12px", fontSize: "14px" }}>End.</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "8px 12px", fontSize: "14px" }}>Perd.</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "8px 12px", fontSize: "14px" }}>Projet</TableCell>
+              <TableCell sx={{ fontWeight: "600", color: "#374151", padding: "8px 12px", fontSize: "14px", textAlign: "center" }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredLoans.map((loan) => (
               <TableRow key={loan.id} sx={{ "&:hover": { backgroundColor: "#f9fafb" } }}>
-                <TableCell sx={{ padding: "12px 16px" }}>
+                <TableCell sx={{ padding: "8px 12px" }}>
                   <Avatar
                     src={loan.tools?.picture}
-                    sx={{ width: 40, height: 40 }}
+                    sx={{ width: 32, height: 32 }}
                   >
-                    <Build />
+                    <Build sx={{ fontSize: 16 }} />
                   </Avatar>
                 </TableCell>
-                <TableCell sx={{ padding: "12px 16px", fontSize: "15px" }}>{loan.users?.name || "N/A"}</TableCell>
-                <TableCell sx={{ padding: "12px 16px", fontSize: "15px" }}>{loan.tools?.name || "N/A"}</TableCell>
-                <TableCell sx={{ padding: "12px 16px", fontSize: "15px" }}>{formatDate(loan.start_date)}</TableCell>
-                <TableCell sx={{ padding: "12px 16px", fontSize: "15px" }}>{formatDate(loan.return_date)}</TableCell>
-                <TableCell sx={{ padding: "12px 16px" }}>
-                  <Chip label={loan.status} color={getStatusColor(loan.status)} size="small" sx={{ fontSize: "14px" }} />
+                <TableCell sx={{ padding: "8px 12px", fontSize: "13px" }}>{loan.users?.name || "N/A"}</TableCell>
+                <TableCell sx={{ padding: "8px 12px", fontSize: "13px" }}>{loan.tools?.name || "N/A"}</TableCell>
+                <TableCell sx={{ padding: "8px 12px", fontSize: "13px" }}>{formatDate(loan.start_date)}</TableCell>
+                <TableCell sx={{ padding: "8px 12px", fontSize: "13px" }}>{formatDate(loan.return_date)}</TableCell>
+                <TableCell sx={{ padding: "8px 12px" }}>
+                  <Chip label={loan.status} color={getStatusColor(loan.status)} size="small" sx={{ fontSize: "12px" }} />
                 </TableCell>
-                <TableCell sx={{ padding: "12px 16px", fontSize: "15px" }}>{loan.quantity}</TableCell>
-                <TableCell sx={{ padding: "12px 16px", fontSize: "15px" }}>{loan.projects?.name || "N/A"}</TableCell>
-                <TableCell sx={{ padding: "12px 16px" }}>
+                <TableCell sx={{ padding: "8px 12px", fontSize: "13px", textAlign: "center" }}>{loan.quantity}</TableCell>
+                <TableCell sx={{ padding: "8px 12px", fontSize: "13px", textAlign: "center" }}>{loan.returned_quantity || 0}</TableCell>
+                <TableCell sx={{ padding: "8px 12px", fontSize: "13px", textAlign: "center" }}>{loan.installed_quantity || 0}</TableCell>
+                <TableCell sx={{ padding: "8px 12px", fontSize: "13px", textAlign: "center" }}>{loan.dameged_quantity || 0}</TableCell>
+                <TableCell sx={{ padding: "8px 12px", fontSize: "13px", textAlign: "center" }}>{loan.lost_quantity || 0}</TableCell>
+                <TableCell sx={{ padding: "8px 12px", fontSize: "13px" }}>{loan.projects?.name || "N/A"}</TableCell>
+                <TableCell sx={{ padding: "8px 12px" }}>
                   <div className="flex justify-center space-x-2">
                     <Button
                       size="small"
@@ -452,7 +491,7 @@ export default function Loans() {
               >
                 <MenuItem value="emprunté">Emprunté</MenuItem>
                 <MenuItem value="retourné">Retourné</MenuItem>
-                <MenuItem value="en_retard">En retard</MenuItem>
+                <MenuItem value="installée">Installée</MenuItem>
               </Select>
             </FormControl>
           </div>
