@@ -37,6 +37,12 @@ export default function Dashboard() {
   const location = useLocation();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [user, setUser] = React.useState(null);
+
+  React.useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("user") || "{}");
+    setUser(userData);
+  }, []);
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -99,6 +105,7 @@ export default function Dashboard() {
               }}
             >
               <Avatar 
+                src={user?.picture}
                 sx={{ 
                   width: 36, 
                   height: 36,
@@ -107,7 +114,7 @@ export default function Dashboard() {
                   fontWeight: "bold",
                 }}
               >
-                A
+                {user?.name ? user.name.charAt(0).toUpperCase() : "A"}
               </Avatar>
             </IconButton>
             <Menu

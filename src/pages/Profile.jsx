@@ -84,10 +84,10 @@ export default function Profile() {
     <div className="max-w-2xl mx-auto">
       <div className="flex items-center gap-4 mb-6">
         <Avatar 
-          src={user.picture || formData.picture}
-          sx={{ width: 64, height: 64, bgcolor: "#16a34a" }}
+          src={selectedFile ? URL.createObjectURL(selectedFile) : (user.picture || formData.picture)}
+          sx={{ width: 80, height: 80, bgcolor: "#16a34a" }}
         >
-          <Person sx={{ fontSize: 32 }} />
+          {!user.picture && !formData.picture && !selectedFile && <Person sx={{ fontSize: 40 }} />}
         </Avatar>
         <div>
           <Typography variant="h4" className="font-bold text-green-700">
@@ -95,6 +95,9 @@ export default function Profile() {
           </Typography>
           <Typography variant="body1" className="text-gray-600">
             Gérer les informations de votre compte
+          </Typography>
+          <Typography variant="body2" className="text-gray-500">
+            {user.name} • {user.role}
           </Typography>
         </div>
       </div>

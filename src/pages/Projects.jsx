@@ -44,6 +44,7 @@ export default function Projects() {
     client_name: "",
     address: "",
     start_date: "",
+    end_date: "",
     status: "planifié",
   });
 
@@ -115,6 +116,7 @@ export default function Projects() {
       client_name: project.client_name || "",
       address: project.address || "",
       start_date: project.start_date ? project.start_date.split('T')[0] : "",
+      end_date: project.end_date ? project.end_date.split('T')[0] : "",
       status: project.status || "planifié",
     });
     setOpen(true);
@@ -128,6 +130,7 @@ export default function Projects() {
       client_name: "",
       address: "",
       start_date: "",
+      end_date: "",
       status: "planifié",
     });
   };
@@ -398,13 +401,22 @@ export default function Projects() {
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
           />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <TextField
               fullWidth
               label="Date de début"
               type="date"
               value={formData.start_date}
               onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+              InputLabelProps={{ shrink: true }}
+              sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+            />
+            <TextField
+              fullWidth
+              label="Date de fin"
+              type="date"
+              value={formData.end_date}
+              onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
               InputLabelProps={{ shrink: true }}
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
             />

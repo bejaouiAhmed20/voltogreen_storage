@@ -44,6 +44,7 @@ export default function Loans() {
     user_id: "",
     start_date: "",
     project_id: "",
+    status: "emprunté",
     tools: [{ tool_id: "", quantity: 1 }],
   });
   const [error, setError] = useState("");
@@ -90,7 +91,7 @@ export default function Loans() {
         const loanData = {
           user_id: formData.user_id,
           start_date: formData.start_date,
-          location: formData.location,
+          status: formData.status,
           tool_id: formData.tools[0].tool_id,
           quantity: formData.tools[0].quantity
         };
@@ -103,6 +104,7 @@ export default function Loans() {
               user_id: formData.user_id,
               start_date: formData.start_date,
               project_id: formData.project_id,
+              status: "emprunté",
               tool_id: tool.tool_id,
               quantity: tool.quantity
             };
@@ -134,6 +136,7 @@ export default function Loans() {
       user_id: loan.user_id || "",
       start_date: loan.start_date ? loan.start_date.split('T')[0] : "",
       project_id: loan.project_id || "",
+      status: loan.status || "emprunté",
       tools: [{ tool_id: loan.tool_id || "", quantity: loan.quantity || 1 }],
     });
     setOpen(true);
@@ -147,6 +150,7 @@ export default function Loans() {
       user_id: "",
       start_date: "",
       project_id: "",
+      status: "emprunté",
       tools: [{ tool_id: "", quantity: 1 }],
     });
   };
@@ -417,19 +421,41 @@ export default function Loans() {
             margin="normal"
             InputLabelProps={{ shrink: true }}
           />
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Projet</InputLabel>
-            <Select
-              value={formData.project_id}
-              onChange={(e) => setFormData({ ...formData, project_id: e.target.value })}
-            >
-              {projects.map((project) => (
-                <MenuItem key={project.id} value={project.id}>
-                  {project.name} - {project.address}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <div className="grid grid-cols-2 gap-4">
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Projet</InputLabel>
+              <Select
+                value={formData.project_id}
+                onChange={(e) => setFormData({ ...formData, project_id: e.target.value })}
+              >
+                {projects.map((project) => (
+                  <MenuItem 
+                    key={project.id} 
+                    value={project.id}
+                    disabled={project.status === "terminé"}
+                    sx={{
+                      color: project.status === "terminé" ? '#9ca3af' : 'inherit',
+                      backgroundColor: project.status === "terminé" ? '#f9fafb' : 'inherit'
+                    }}
+                  >
+                    {project.name} - {project.address}
+                    {project.status === "terminé" && " (Terminé)"}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Statut</InputLabel>
+              <Select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              >
+                <MenuItem value="emprunté">Emprunté</MenuItem>
+                <MenuItem value="retourné">Retourné</MenuItem>
+                <MenuItem value="en_retard">En retard</MenuItem>
+              </Select>
+            </FormControl>
+          </div>
           {error && (
             <Typography color="error" variant="body2" className="mt-2">
               {error}
